@@ -1,0 +1,4 @@
+se_Theater BITMAP "se_theater.bmp"
+se_Engine BITMAP "se_engine.bmp"
+se_ThreadTimer BITMAP "se_ThreadTimer.bmp"
+se_Grid BITMAP "se_Grid.bmp"

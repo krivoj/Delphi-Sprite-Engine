@@ -1,0 +1,49 @@
+package DSE;
+
+{$R *.res}
+{$R 'dse.dcr'}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO OFF}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION OFF}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES ON}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DEFINE DEBUG}
+{$ENDIF IMPLICITBUILDING}
+{$IMPLICITBUILD ON}
+
+requires
+  rtl,
+  vcl;
+
+contains
+  DSE_theater in 'DSE_theater.pas',
+  DSE_bitmap in 'DSE_bitmap.pas',
+  DSE_misc in 'DSE_misc.pas',
+  DSE_threadtimer in 'DSE_threadtimer.pas',
+  DSE_defs in 'DSE_defs.pas',
+  DSE_list in 'DSE_list.pas',
+  DSE_PathPlanner in 'DSE_PathPlanner.pas',
+  DSE_SearchFiles in 'DSE_SearchFiles.pas',
+  DSE_Random in 'DSE_Random.pas',
+  DSE_Grid in 'DSE_Grid.pas';
+
+end.
+
+
