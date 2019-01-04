@@ -64,16 +64,16 @@ begin
   SE_Characters.Priority := 1;
 
 
-  Background:= SE_Background.CreateSprite('..\..\..\!media\back1.bmp','background',{framesX}1,{framesY}1,{Delay}0,{X}0,{Y}0,{transparent}false);
+  Background:= SE_Background.CreateSprite('..\!media\back1.bmp','background',{framesX}1,{framesY}1,{Delay}0,{X}0,{Y}0,{transparent}false);
   Background.Position := Point( Background.FrameWidth div 2 , Background.FrameHeight div 2 );
 
   SE_Theater1.Active := True;
 
 
-  SE_Characters.CreateSprite('..\..\..\!media\gabriel_WALK.bmp' ,'gabriel',{framesX}15,{framesY}6,{Delay}7,{X}100,{Y}100,{transparent}true);
-  SE_Characters.CreateSprite('..\..\..\!media\shahira_WALK.bmp','shahira',{framesX}15,{framesY}6,{Delay}7,{X}500,{Y}100,{transparent}true);
+  SE_Characters.CreateSprite('..\!media\gabriel_WALK.bmp' ,'gabriel',{framesX}15,{framesY}6,{Delay}7,{X}100,{Y}100,{transparent}true);
+  SE_Characters.CreateSprite('..\!media\shahira_WALK.bmp','shahira',{framesX}15,{framesY}6,{Delay}7,{X}500,{Y}100,{transparent}true);
 
-  SpriteTree := SE_Characters.CreateSprite('..\..\..\!media\tree.bmp','tree',{framesX}2,{framesY}1,{Delay}5,{X}250,{Y}250,{transparent}true);
+  SpriteTree := SE_Characters.CreateSprite('..\!media\tree.bmp','tree',{framesX}2,{framesY}1,{Delay}5,{X}250,{Y}250,{transparent}true);
   SpriteTree.ModPriority := 170;
 
   Randomize;
@@ -91,9 +91,9 @@ begin
       if Sprite1.Guid = 'shahira' then Sprite1.DieAtEndX := True;
       if Sprite2.Guid = 'shahira' then Sprite2.DieAtEndX := True;
       if (Pos( 'shahira' , Sprite1.SpriteFileName, 1)  <> 0)  and (Pos( 'dead' , Sprite1.SpriteFileName, 1)  = 0) then
-        Sprite1.ChangeBitmap('..\..\..\!media\shahira_dead.bmp', {framesX}15,{framesY}6,{Delay}5);
+        Sprite1.ChangeBitmap('..\!media\shahira_dead.bmp', {framesX}15,{framesY}6,{Delay}5);
       if (Pos( 'shahira' , Sprite2.SpriteFileName, 1)  <> 0)  and (Pos( 'dead' , Sprite2.SpriteFileName, 1)  = 0) then
-        Sprite2.ChangeBitmap('..\..\..\!media\shahira_dead.bmp', {framesX}15,{framesY}6,{Delay}5);
+        Sprite2.ChangeBitmap('..\!media\shahira_dead.bmp', {framesX}15,{framesY}6,{Delay}5);
   end;
 
 end;
@@ -117,17 +117,17 @@ var
 begin
    SpriteShahira := SE_Characters.FindSprite('shahira');
    if SpriteShahira = nil then
-     SE_Characters.CreateSprite('..\..\..\!media\shahira_WALK.bmp','shahira',{framesX}15,{framesY}6,{Delay}7,{X}500,{Y}100,{transparent}true);
+     SE_Characters.CreateSprite('..\!media\shahira_WALK.bmp','shahira',{framesX}15,{framesY}6,{Delay}7,{X}500,{Y}100,{transparent}true);
 
    SpriteGabriel:= SE_Characters.FindSprite('gabriel');
    SpriteShahira:= SE_Characters.FindSprite('shahira');
 
-   SpriteGabriel.ChangeBitmap('..\..\..\!media\gabriel_attack.bmp' ,{framesX}8,{framesY}6,{Delay}5);
+   SpriteGabriel.ChangeBitmap('..\!media\gabriel_attack.bmp' ,{framesX}8,{framesY}6,{Delay}5);
    SpriteGabriel.StopAtEndX := True;
    SpriteGabriel.FrameY := 3;
    SpriteGabriel.FrameX := 1;
 
-   SpriteSpell := SE_Characters.CreateSprite('..\..\..\!media\spell.bmp' ,'spell',{framesX}9,{framesY}1,{Delay}5,
+   SpriteSpell := SE_Characters.CreateSprite('..\!media\spell.bmp' ,'spell',{framesX}9,{framesY}1,{Delay}5,
    {X}SpriteGabriel.Position.X ,{Y}SpriteGabriel.Position.Y,{transparent}true);
 
    SpriteSpell.MoverData.Speed := 4.0;

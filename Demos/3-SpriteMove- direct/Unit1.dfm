@@ -36,6 +36,7 @@ object Form1: TForm1
     GridCellsX = 30
     GridCellsY = 20
     GridHexSmallWidth = 10
+    CollisionDelay = 0
     ShowPerformance = False
     OnTheaterMouseMove = SE_Theater1TheaterMouseMove
     VirtualWidth = 1200
