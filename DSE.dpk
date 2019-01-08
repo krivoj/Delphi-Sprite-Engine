@@ -42,7 +42,8 @@ contains
   DSE_PathPlanner in 'DSE_PathPlanner.pas',
   DSE_SearchFiles in 'DSE_SearchFiles.pas',
   DSE_Random in 'DSE_Random.pas',
-  DSE_Grid in 'DSE_Grid.pas';
+  DSE_Grid in 'DSE_Grid.pas',
+  DSE_Panel in 'DSE_Panel.pas';
 
 end.
 

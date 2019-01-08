@@ -44,7 +44,7 @@ type
     fbitmapAlpha: TBitmap;
     fBitmapScanlines: ppointerarray;
     fdata: pointer;
-    info:     TBitmapInfo;
+    info: TBitmapInfo;
     DIB_SectionHandle: HBITMAP;
     fRowLen: integer;
     BlendMode: SE_BlendMode;
@@ -1583,6 +1583,7 @@ begin
 
   InfoHead := AllocMem(sizeof(TBITMAPINFOHEADER2));
   CoreHead := AllocMem(sizeof(TBITMAPCOREHEADER));
+
   try
     p0 := fs.Position;
     fs.Read(FileHead, sizeof(TBITMAPFILEHEADER));
@@ -1599,8 +1600,7 @@ begin
 
       if dm <> 40 then exit;
 
-      if InfoHead^.biHeight < 0 then
-      begin
+      if InfoHead^.biHeight < 0 then begin
         InfoHead^.biHeight := -InfoHead^.biHeight;
         inverter := InfoHead^.biHeight - 1;
       end

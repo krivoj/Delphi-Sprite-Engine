@@ -1034,8 +1034,7 @@ begin
 end;
 procedure SE_Theater.AttachSpriteEngine(AEngine: SE_Engine);
 begin
-  if not (csDesigning in ComponentState) then
-  begin
+  if not (csDesigning in ComponentState) then  begin
     lsTEngines.Add( AEngine );
     SorTEngines;
   end;
@@ -2960,9 +2959,9 @@ end;
 procedure SE_Theater.SetBackColor(const aColor: TColor);
 begin
   fbackColor:= aColor;
-//  if csDesigning in ComponentState then  Clear;
+ // if csDesigning in ComponentState then  Clear;
   Update;
- // if (csDesigning in ComponentState) then  RefreshPaint;
+
 end;
 
 
@@ -3299,8 +3298,7 @@ end;
 
 procedure SE_Theater.SetZoom(v: double);
 begin
-  if (v > 0) and ((v <> fZoom) or (v<>fZoom)) then
-  begin
+  if (v > 0) and ((v <> fZoom) or (v<>fZoom)) then  begin
     fUpdating:= true;
     SaveInfoZoom(v);
     Update;
@@ -3314,13 +3312,6 @@ var
   direction: integer;
 begin
   if not fMouseWheelZoom then exit;
-
-{  if Value > 0 then
-    direction := -1
-  else
-    direction := 1;
-  if fMouseWheelInvert then
-    direction := -1 * direction; }
 
   if Value > 0 then
     direction := 1
@@ -3425,8 +3416,7 @@ procedure SE_Theater.SetBounds(ALeft, ATop, AWidth, AHeight: Integer);
 begin
   inherited;
   if (csReading in ComponentState) or (csDesigning in ComponentState) or (csLoading in ComponentState) then
-    if assigned(fVisibleBitmap) then
-    begin
+    if assigned(fVisibleBitmap) then begin
       fVisibleBitmap.Width := Width;
       fVisibleBitmap.Height := Height;
    //   Clear;
@@ -3450,15 +3440,6 @@ begin
   if (ParForm<>nil) and (ParForm.Visible) and CanFocus then
     SetFocus;
 
-  //if mouseWheelZoom = true  then  begin
-
-  //  lx := x;
-  //  ly := y;
-
- //   fMouseDownX := lx;
- //   fMouseDownY := ly;
-//    fLastMouseMoveX := lx;
-//    fLastMouseMoveY := ly;
     fMouseDownX := x;
     fMouseDownY := y;
     fLastMouseMoveX := x;
@@ -3776,8 +3757,6 @@ begin
 NoMoreSprites:
     if Assigned( FOnSpriteMouseUp ) and (lstSpriteClicked.Count > 0)
       then  FOnSpriteMouseUp( self, lstSpriteClicked , Button, Shift );
-  //  if (Button = mbLeft) and (lstSpriteClicked.Count > 0) and  ( Assigned( FOnSpriteClick )) then
-  //    FOnSpriteClick( self, lstSpriteClicked, Button , Shift);
   //cells
    if Assigned( FOnCellMouseUp )  then begin
      pt := Point( XVisibleToVirtual(x), YVisibleToVirtual(y) );
