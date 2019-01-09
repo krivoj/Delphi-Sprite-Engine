@@ -245,11 +245,13 @@ begin
     if n < ColCount then begin
       for I := Columns.Count -1 downto 0 do begin
         RemoveColumn ( Columns.Count -1 );
+        if n >= Columns.Count then Exit;  // devo forzarlo
       end;
     end
     else if n > ColCount then begin
       while n > ColCount do begin
         AddColumn;
+        if n = Columns.Count then Exit;   // devo forzarlo
       end;
     end;
     GridUpdate:= false;
@@ -268,14 +270,16 @@ begin
       exit;
 
   GridUpdate:= true;
-    if n < RowCount then begin
+    if n < Rows.Count then begin
       for I := Rows.Count -1 downto 0 do begin
         RemoveRow(i);
+        if n >= Rows.Count then Exit;  // devo forzarlo
       end;
     end
-    else if n > RowCount then begin
-      while n > RowCount do begin
+    else if n > Rows.Count then begin
+      while n > Rows.Count do begin
         AddRow;
+        if n = Rows.Count then Exit;   // devo forzarlo
       end;
     end;
 
