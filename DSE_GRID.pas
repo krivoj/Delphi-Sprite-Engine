@@ -347,7 +347,7 @@ begin
       if fCells[i].ProgressBar <> nil then FreeAndNil(fCells[i].ProgressBar);//.Free;
       aSprite := CellsEngine.FindSprite( IntTostr(fcells[i].Col) +':' +  IntTostr(fcells[i].Row)   );
       CellsEngine.RemoveSprite(aSprite);
-
+      CellsEngine.ProcessSprites(1);
       fCells[i].Sprite := nil;
       fCells.Delete(i);
     end;
@@ -430,6 +430,7 @@ begin
       if fCells[i].ProgressBar <> nil then fCells[i].ProgressBar.Free;
       aSprite := CellsEngine.FindSprite( IntTostr(fcells[i].Col) +':' +  IntTostr(fcells[i].Row)   );
       CellsEngine.RemoveSprite(aSprite);
+      CellsEngine.ProcessSprites(1);
       fcells[i].Sprite := nil;
       fCells.Delete(i);
     end;
