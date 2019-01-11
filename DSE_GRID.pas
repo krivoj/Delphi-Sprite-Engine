@@ -312,7 +312,7 @@ begin
 
     TotCellWidth := GetTotCellWidth ( ACell.Col -1 ); // somma colWidth fino a i-1
     TotCellHeight := GetTotCellHeight ( ACell.Row -1 ); // somma Rowheight fino a i-1
-    bmp:= SE_Bitmap.Create ( Columns[ACell.Col].Width, aRow.Height) ;
+    bmp:= SE_Bitmap.Create ( imax(Columns[ACell.Col].Width,1), imax(aRow.Height,1)) ;
     bmp.Canvas.Brush.Color := aCell.BackColor;
     bmp.FillRect(0,0,bmp.Width,bmp.Height,ACell.BackColor);
 
@@ -343,15 +343,16 @@ begin
   // rimuovo le row
   for I := fCells.count -1 downto 0 do begin
     if fcells[i].Row = idx then begin
-      if fCells[i].Bitmap <> nil then fCells[i].Bitmap.Free;
-      if fCells[i].ProgressBar <> nil then fCells[i].ProgressBar.Free;
+      if fCells[i].Bitmap <> nil then FreeAndNil(fCells[i].Bitmap);//.Free);
+      if fCells[i].ProgressBar <> nil then FreeAndNil(fCells[i].ProgressBar);//.Free;
       aSprite := CellsEngine.FindSprite( IntTostr(fcells[i].Col) +':' +  IntTostr(fcells[i].Row)   );
       CellsEngine.RemoveSprite(aSprite);
+
       fCells[i].Sprite := nil;
       fCells.Delete(i);
     end;
   end;
-
+  CellsEngine.ProcessSprites( 1 ); // importante o memoryleak di sprites
   // scalo tutte le Row di 1
   fCells.sort(TComparer<SE_cell>.Construct(
   function (const L, R: SE_cell): integer
@@ -396,7 +397,7 @@ begin
     aCell.BackColor := Backcolor;
     TotCellWidth := GetTotCellWidth ( ACell.Col -1 ); // somma colWidth fino a i-1
     TotCellHeight := GetTotCellHeight ( ACell.Row -1 ); // somma Rowheight fino a i-1
-    bmp:= SE_Bitmap.Create ( aCol.Width, Rows[ACell.Row].Height) ;
+    bmp:= SE_Bitmap.Create ( imax(aCol.Width,1), imax(Rows[ACell.Row].Height,1)) ;
     bmp.Canvas.Brush.Color := aCell.BackColor;
     bmp.FillRect(0,0,bmp.Width,bmp.Height,ACell.BackColor);
 
@@ -457,8 +458,10 @@ procedure SE_grid.ClearData;
 var
   I: integer;
 begin
+  WaitForSingleObject(Mutex,INFINITE);
   GridUpdate:= true;
   for i := 0 to fCells.Count -1 do begin
+    fcells[i].BackColor := BackColor;
     fcells[i].Text := '';
     if fcells[i].Bitmap <> nil then fcells[i].Bitmap.Free;
     fcells[i].Bitmap := nil;
@@ -466,6 +469,7 @@ begin
     fcells[i].ProgressBar := nil;
   end;
   GridUpdate:= false;
+  ReleaseMutex(Mutex);
 
 end;
 

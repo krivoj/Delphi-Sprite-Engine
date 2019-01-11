@@ -2256,11 +2256,9 @@ var
   label endMove;
 
 begin
-  if LifeSpan > 0 then
-  begin
+  if LifeSpan > 0 then begin
     LifeSpan := LifeSpan - interval;
-    if LifeSpan = 0 then
-    begin
+    if LifeSpan = 0 then  begin
       Dead := true;
       Exit;
     end;
