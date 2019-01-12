@@ -793,6 +793,7 @@ var
   CellX,CellY: integer;
 begin
   if Assigned( FOnGridCellMouseMove )  then begin
+      Handled := True;
       CellX := StrtoInt(ExtractWordL (1,lstSprite[0].Guid,':'));
       CellY := StrtoInt(ExtractWordL (2,lstSprite[0].Guid,':'));
       FOnGridCellMouseMove( self, Shift, CellX, CellY, lstSprite[0]);
