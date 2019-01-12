@@ -27,7 +27,7 @@ type
   SE_SpriteEventDstReached = procedure of object;
 
   SE_SpriteMouseEvent = procedure( Sender: TObject; lstSprite: TObjectList<SE_Sprite>; Button: TMouseButton; Shift: TShiftState  ) of object;
-  SE_SpriteMouseMoveEvent = procedure( Sender: TObject; lstSprite: TObjectList<SE_Sprite>; Shift: TShiftState) of object;
+  SE_SpriteMouseMoveEvent = procedure( Sender: TObject; lstSprite: TObjectList<SE_Sprite>; Shift: TShiftState; var Handled: boolean) of object;
 
   SE_TheaterMouseEvent = procedure( Sender: TObject; VisibleX,VisibleY,VirtualX,VirtualY: integer; Button: TMouseButton;Shift: TShiftState ) of object;
   SE_TheaterMouseMoveEvent = procedure( Sender: TObject; VisibleX,VisibleY,VirtualX,VirtualY: integer; Shift: TShiftState ) of object;
@@ -176,7 +176,7 @@ type
 
 
   protected
-
+    fpassive: Boolean;
     fViewX, fViewY: integer;
     fZoom: double;
     fZoomDiv100: double;   // fZoom/100   settati come varibaili per non calcolarsi ogni volta
@@ -213,6 +213,7 @@ type
 
 
   public
+    lstSpritesHandled: Boolean;
     Angle: Integer;
     ChangeCursor : Boolean;
     SceneName: string;
@@ -223,6 +224,7 @@ type
     thrdAnimate: SE_ThreadTimer;
     constructor Create(Owner: TComponent); override;
     destructor Destroy; override;
+    procedure Loaded; override;
 
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
     procedure MouseMove(Shift: TShiftState; X, Y: Integer); override;
@@ -315,6 +317,7 @@ type
 
     property VirtualWidth: integer read fVirtualWidth write SetVirtualWidth;
     property Virtualheight: integer read fVirtualheight write SetVirtualheight;
+    property Passive : boolean read fPassive write fpassive default False;
 
     property Anchors;
     property OnMouseWheel;
@@ -599,9 +602,9 @@ type
     procedure iOnDestinationReachedPerc ; virtual;
 
 
-    procedure MouseUp ( x,y: integer; Button: TMouseButton; Shift: TShiftState; var handled: boolean); virtual;
-    procedure MouseDown ( x,y: integer; Button: TMouseButton; Shift: TShiftState; var handled: boolean); virtual;
-    procedure MouseMove ( x,y: integer; Shift: TShiftState; var handled: boolean); virtual;
+//    procedure MouseUp ( x,y: integer; Button: TMouseButton; Shift: TShiftState; var handled: boolean); virtual;
+//    procedure MouseDown ( x,y: integer; Button: TMouseButton; Shift: TShiftState; var handled: boolean); virtual;
+//    procedure MouseMove ( x,y: integer; Shift: TShiftState; var handled: boolean); virtual;
 
     procedure Move(interval: Integer); virtual;
     procedure SetCurrentFrame; virtual;
@@ -1175,11 +1178,11 @@ begin
 
   if not (csDesigning in ComponentState) then begin
     FActive := Value;
-    if Not FActive then begin
+    if Not FActive and not fPassive then begin
       thrdAnimate.Enabled := False;
     end
     else begin
-      thrdAnimate.Enabled := True ;
+      if not fpassive then thrdAnimate.Enabled := True ;
     end;
   end;
 end;
@@ -1809,8 +1812,7 @@ begin
   (* i nuovi sprite vanno nella lista principale *)
 
 
-  while lstNewSprites.Count > 0 do
-  begin
+  while lstNewSprites.Count > 0 do  begin
     nIndex := -1;
     for i := 0 to lstSprites.Count - 1 do
       if  lstNewSprites[0].Priority <=  lstSprites[i].Priority then
@@ -2191,18 +2193,6 @@ begin
   inherited Destroy;
 end;
 
-procedure SE_Sprite.MouseUp ( x,y: integer; Button: TMouseButton; Shift:TShiftState; var handled: boolean);
-begin
-  //
-end;
-procedure SE_Sprite.MouseDown ( x,y: integer; Button: TMouseButton; Shift:TShiftState; var handled: boolean);
-begin
-  //
-end;
-procedure SE_Sprite.MouseMove ( x,y: integer; Shift:TShiftState; var handled: boolean);
-begin
-  //
-end;
 procedure SE_Sprite.iOnDestinationReached;
 var
 X,Y: Single;
@@ -2858,13 +2848,24 @@ begin
      Application.ProcessMessages;
    until ((GetTickCount-FirstTickCount) >= Longint(msecs));
 end;
-
+procedure SE_Theater.Loaded;
+begin
+  inherited;
+  lstSpritesHandled := True;
+  if not (csDesigning in ComponentState) then begin
+    if Not Passive then begin
+      thrdAnimate := SE_ThreadTimer.Create(self);
+      thrdAnimate.KeepAlive := True;
+      thrdAnimate.Interval := 20;
+      thrdAnimate.OnTimer :=  OnTimer ;
+      Active := true;
+    end;
+  end;
+end;
 constructor SE_Theater.Create(Owner: TComponent);
 begin
 
-
   inherited Create(Owner);
-
 
   fZoom := 100;
   fZoomDiv100 := fZoom / 100;
@@ -2906,20 +2907,13 @@ begin
     AHexCellSize.Height:= FCellHeight;
     aHexCellSize.SmallWidth := fHexSmallwidth;
 
-  end;
-
-
-  if not (csDesigning in ComponentState) then begin
+  end
+  else begin
     fVisibleBitmap := SE_Bitmap.Create(width, height);
     fVirtualBitmap := SE_Bitmap.Create(width, height);
     lstSpriteClicked:= TObjectList<SE_Sprite>.Create(false); // false o ad ogni clear distrugge gli sprite
     lstSpriteMoved:= TObjectList<SE_Sprite>.Create(false);
     lsTEngines := TObjectList<SE_Engine>.Create(true);
-    thrdAnimate := SE_ThreadTimer.Create(self);
-    thrdAnimate.KeepAlive := True;
-    thrdAnimate.Interval := 20;
-    thrdAnimate.OnTimer :=  OnTimer ;
-    Active := true;
   end;
 
     fUpdating:=false;
@@ -3026,14 +3020,16 @@ begin
   fvirtualWidth := v;
   if fVirtualheight <= 0 then exit;
   if not (csDesigning in ComponentState) then  begin
-  if not FActive then exit;
-
-  Active:= false;
-  //FreeAndNil( fVirtualBitmap );
-  fVirtualBitmap.Free;
-  fVirtualBitmap:= SE_Bitmap.Create(fvirtualwidth, fvirtualheight);
-  update;
-  Active:= true;
+  //if not FActive then exit;
+  if  (csLoading in ComponentState) then Exit;
+    if not Passive then
+      Active:= false;
+    //FreeAndNil( fVirtualBitmap );
+    fVirtualBitmap.Free;
+    fVirtualBitmap:= SE_Bitmap.Create(fvirtualwidth, fvirtualheight);
+    update;
+    if not Passive then
+     Active:= true;
   end;
 
 
@@ -3045,12 +3041,15 @@ begin
   if fVirtualHeight <= 0 then exit;
 
   if not (csDesigning in ComponentState) then begin
-    if not FActive then exit;
-    Active:= false;
+  //  if not FActive then exit;
+  if  (csLoading in ComponentState) then Exit;
+    if not Passive then
+      Active:= false;
     fVirtualBitmap.Free;
     fVirtualBitmap:= SE_Bitmap.Create(fvirtualwidth, fvirtualheight);
     update;
-    Active:= true;
+    if not Passive then
+      Active:= true;
   end;
 
 
@@ -3321,7 +3320,6 @@ begin
     ZoomAt(X, Y, fZoom + imax(round(fZoom * fMouseWheelValue / 100), 1) * direction);
 end;
 
-
 procedure SE_Theater.WMMouseWheel(var Message: TMessage);
 var
   pt: TPoint;
@@ -3430,13 +3428,13 @@ var
   spr: SE_Sprite;
   pt: TPoint;
   BmpX,BmpY: integer;
-  handled: boolean;
-  Label NoMoreSprites;
 begin
   inherited;
   ParForm := GetParentForm(Self);
   if (ParForm<>nil) and (ParForm.Visible) and CanFocus then
     SetFocus;
+
+//  if mouseWheelZoom = true  then  begin
 
     fMouseDownX := x;
     fMouseDownY := y;
@@ -3444,7 +3442,7 @@ begin
     fLastMouseMoveY := y;
     MouseDownViewX := ViewX;
     MouseDownViewY := ViewY;
-  //end;
+//  end;
 
   pt := Point( XVisibleToVirtual(x), YVisibleToVirtual(y) );
   // Theater MouseUp
@@ -3454,7 +3452,7 @@ begin
   if Assigned( FOnmousedown )  then  FOnmousedown( self, Button, Shift, X, Y );
   //spriteclick
 
-  handled:= false;
+
   lstSpriteClicked.clear;
     for i := lstEngines.Count - 1 downTo 0 Do  begin
 
@@ -3481,21 +3479,12 @@ begin
             if spr.Transparent then begin          // Transaprent
               if lstEngines[i].PixelClick then begin
                 if spr.fBMPCurrentFrame.Canvas.Pixels [BmpX,BmpY] <> spr.fBMPCurrentFrame.Canvas.Pixels [0,0] then begin
-                  spr.MouseDown(bmpX, bmpY, Button, Shift, handled);
-                  if Handled then begin
-                   goto NoMoreSprites;
-                  end;
-                  if ( lstEngines[i].ClickSprites) and ( not handled)
-                    then lstSpriteClicked.Add(spr); //<-- spr.MouseDown può disabilitare spriteclick
-                 end;
+                  if ( lstEngines[i].ClickSprites)
+                    then lstSpriteClicked.Add(spr);
+                end;
               end
-              else
-              begin
-                spr.MouseDown(bmpX, bmpY, Button, Shift, handled);
-                  if Handled then begin
-                   goto NoMoreSprites;
-                  end;
-                if ( lstEngines[i].ClickSprites) and ( not handled)
+              else begin
+                if ( lstEngines[i].ClickSprites)
                   then lstSpriteClicked.Add(spr);
               end;
             end
@@ -3504,22 +3493,15 @@ begin
 //                bmpX:= spr.DrawingRect.Width - bmpX;
 //                bmpY:= spr.DrawingRect.bottom - pt.Y;
 //                bmpY:= spr.DrawingRect.Height - bmpY;
-                spr.MouseDown(bmpX, bmpY, Button, Shift, handled);
-                  if Handled then begin
-                   goto NoMoreSprites;
-                  end;
-//                if Assigned( FOnSpriteClick ) and ( lstEngines[i].ClickSprites) and ( not handled)
-                 if ( lstEngines[i].ClickSprites) and ( not handled)
+                 if ( lstEngines[i].ClickSprites)
                   then lstSpriteClicked.Add(spr); //<-- spr.MouseDown può disabilitare spriteclick
             end;
           end;
         end;
-             if handled then goto NoMoreSprites;
 
       end;
     end;
 
-NoMoreSprites:
 
     if Assigned( FOnSpritemousedown ) and (lstSpriteClicked.Count > 0)  then
       FOnSpritemousedown( self, lstSpriteClicked , Button, Shift );
@@ -3548,8 +3530,7 @@ var
   i, s, BmpX,BmpY: integer;
   spr: SE_Sprite;
   pt: TPoint;
-  handled: boolean;
-  Label NoMoreSprites;
+  Label NoSprites;
 begin
   inherited;
   if changeCursor then cursor := crDefault;
@@ -3580,9 +3561,9 @@ begin
     FOnMouseMove( self, Shift,  X ,  Y  );
   // Spritemousemove
 
-  handled:= false;
+  if not lstSpritesHandled then goto noSprites; // se la precedente list non è ancora stata gestita
+    lstSpriteMoved.Clear ;
 
-  lstSpriteMoved.Clear ;
     for i := lstEngines.Count - 1 downTo 0 Do  begin
       if not lstEngines[i].ClickSprites then
         Continue;
@@ -3609,45 +3590,36 @@ begin
               if lstEngines[i].PixelClick then begin
                 if spr.fBMPCurrentFrame.Canvas.Pixels [BmpX,BmpY] <> spr.fBMPCurrentFrame.Canvas.Pixels [0,0] then begin
                   if changeCursor then cursor := crHandpoint;
-                  spr.MouseMove(bmpX, bmpY, Shift, handled);
-                  if Handled then begin
-                   goto NoMoreSprites;
-                  end;
-                  if Assigned( FOnSpriteMouseMove ) and ( not handled)
+                  if Assigned( FOnSpriteMouseMove ) and ( lstSpritesHandled )
                     then lstSpriteMoved.Add(spr);
                 end;
               end
               else
               begin
                 if changeCursor then cursor := crHandpoint;
-                spr.MouseMove(bmpX, bmpY,  Shift, handled);
-                  if Handled then begin
-                   goto NoMoreSprites;
-                  end;
-                  if Assigned( FOnSpriteMouseMove ) and ( not handled)
+                  if Assigned( FOnSpriteMouseMove ) and ( lstSpritesHandled )
                     then lstSpriteMoved.Add(spr);
               end;
             end
             else begin // no transparent
                 if changeCursor then cursor := crHandpoint;
-                spr.MouseMove(bmpX, bmpY,  Shift, handled);
-                  if Handled then begin
-                   goto NoMoreSprites;
-                  end;
-                  if Assigned( FOnSpriteMouseMove ) and ( not handled)
+                  if Assigned( FOnSpriteMouseMove ) and ( lstSpritesHandled )
                     then lstSpriteMoved.Add(spr);
             end;
           end;
         end;
-           if Handled then goto NoMoreSprites;
+
       end;
     end;
 
-NoMoreSprites:
 
     if (lstSpriteMoved.Count > 0) and( Assigned( FOnSpriteMouseMove ) )  then begin
-      FOnSpriteMouseMove( self, lstSpriteMoved,Shift );
+      if lstSpritesHandled then begin// se la precedente lista id sprites è stata gestita
+        lstSpritesHandled := False;
+        FOnSpriteMouseMove( self, lstSpriteMoved,Shift, lstSpritesHandled ); // lstSpritesHandled è globale. Quando è stata gestita, la posso rinnovare
+      end;
     end;
+NoSprites:
   //cells
   if Assigned( FOnCellMouseMove )  then begin
     pt := Point( XVisibleToVirtual(x), YVisibleToVirtual(y) );
@@ -3670,8 +3642,7 @@ var
   i, s, BmpX,BmpY: integer;
   spr: SE_Sprite;
   pt: TPoint;
-  handled: boolean;
-  Label NoMoreSprites;
+
 begin
 
   if (Button = mbLeft) and (MousePan)  then  begin
@@ -3690,7 +3661,6 @@ begin
   // normal
   if Assigned( FOnMouseUp ) then   FOnMouseUp( self, Button, Shift, X, Y );
 
-  handled:= false;
   lstSpriteClicked.Clear ;
     for i := lstEngines.Count - 1 downTo 0 Do begin
       if not lstEngines[i].ClickSprites then   Continue;
@@ -3716,43 +3686,26 @@ begin
               if lstEngines[i].PixelClick then begin
 
                 if spr.fBMPCurrentFrame.Canvas.Pixels [BmpX,BmpY] <> spr.fBMPCurrentFrame.Canvas.Pixels [0,0] then begin
-                  spr.MouseUp(bmpX, bmpY, Button, Shift, handled);
-                  if Handled then begin
-                   goto NoMoreSprites;
-                  end;
-                  if ( lstEngines[i].ClickSprites) and ( not handled)
+                  if ( lstEngines[i].ClickSprites)
                     then lstSpriteClicked.Add(spr);
 
-  //                if Button = mbLeft then FOnSpriteClick( self, spr );
-                  //Exit;
                 end;
               end
-              else
-              begin
-                  spr.MouseUp(bmpX, bmpY, Button, Shift, handled);
-                  if Handled then begin
-                   goto NoMoreSprites;
-                  end;
-                  if  Assigned ( FOnSpriteMouseUp )and ( lstEngines[i].ClickSprites) and ( not handled)
+              else begin
+                  if  Assigned ( FOnSpriteMouseUp )and ( lstEngines[i].ClickSprites)
                     then lstSpriteClicked.Add(spr);
               end;
             end
             else begin // no transparent
-                  spr.MouseUp(bmpX, bmpY, Button, Shift, handled);
-                  if Handled then begin
-                   goto NoMoreSprites;
-                  end;
-                  if  Assigned ( FOnSpriteMouseUp )and ( lstEngines[i].ClickSprites) and ( not handled)
-                    then lstSpriteClicked.Add(spr);
+                if  Assigned ( FOnSpriteMouseUp )and ( lstEngines[i].ClickSprites)
+                  then lstSpriteClicked.Add(spr);
             end;
           end;
         end;
-           if Handled then goto NoMoreSprites;
       end;
     end;
 
 
-NoMoreSprites:
     if Assigned( FOnSpriteMouseUp ) and (lstSpriteClicked.Count > 0)
       then  FOnSpriteMouseUp( self, lstSpriteClicked , Button, Shift );
   //cells

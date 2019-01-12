@@ -70,11 +70,13 @@ uses
     procedure SquareBorder (bmp: TBitmap; w,h: Integer; CellBackColor :TColor);
     function GetTotCellWidth ( Limit: integer ): integer;
     function GetTotCellHeight ( Limit: integer ): integer;
+    function GetTotalCellWidth : integer;
+    function GetTotalCellHeight : integer;
     procedure SetFont ( v: TFont );
   protected
     procedure Loaded; override;
     procedure MySpriteMouseDown(Sender: TObject; lstSprite: TObjectList<SE_Sprite>; Button: TMouseButton; Shift: TShiftState);
-    procedure MySpriteMouseMove( Sender: TObject; lstSprite: TObjectList<SE_Sprite>; Shift: TShiftState);
+    procedure MySpriteMouseMove( Sender: TObject; lstSprite: TObjectList<SE_Sprite>; Shift: TShiftState; var Handled: boolean);
     procedure MySpriteMouseUp(Sender: TObject; lstSprite: TObjectList<SE_Sprite>; Button: TMouseButton; Shift: TShiftState);
     procedure RefreshSurface(Sender: TObject); override;
 
@@ -92,6 +94,8 @@ uses
     property RowCount : integer read GetRowCount write SetRowCount;
     Property DefaultColWidth: integer read fDefaultColwidth  write fDefaultColwidth default 100;
     Property DefaultRowHeight: integer read fDefaultRowHeight write fDefaultRowHeight default 32;
+    property TotalCellsWidth : Integer read GetTotalCellWidth;
+    property TotalCellsHeight : Integer read GetTotalCellHeight;
 
     procedure ClearData;
     procedure AddRow;
@@ -101,7 +105,8 @@ uses
 
     procedure AddSE_Bitmap ( const CellX, CellY, copies: integer; bmp: SE_Bitmap; Transparent:boolean);
     procedure AddProgressBar ( const CellX, CellY, Value: integer; Const Color: TColor; Style : SE_ProgressBarStyle);
-//    procedure AddPicture ( const CellX, CellY, strech: boolean);
+
+  //    procedure AddPicture ( const CellX, CellY, strech: boolean);
 
   published
 
@@ -128,7 +133,7 @@ end;
 
 constructor SE_Grid.Create(Owner: TComponent);
 var
-  c,r: integer;
+  r: integer;
   m: string;
 begin
   ffont:= TFont.Create;
@@ -143,6 +148,7 @@ begin
     CellsEngine.fTheater := Self;
     Self.AttachSpriteEngine(CellsEngine);
     IncPriority := 0;
+ //   thrdAnimate.KeepAlive := false;
 
   end;
 
@@ -182,7 +188,8 @@ var
 begin
   Inherited;
   if not (csDesigning in ComponentState) then begin
-    thrdAnimate.Interval := AnimationInterval;
+//    Passive := True;
+    //thrdAnimate.Interval := AnimationInterval;
     OldSpriteMouseDown := OnSpriteMouseDown;
     OldSpriteMouseUp := OnSpriteMouseUp;
     OldSpriteMouseMove := OnSpriteMouseMove;
@@ -282,9 +289,9 @@ begin
         if n = Rows.Count then Exit;   // devo forzarlo
       end;
     end;
+    GridUpdate:= false;
 
   end;
-  GridUpdate:= false;
 end;
 procedure SE_grid.AddRow;
 var
@@ -306,8 +313,8 @@ begin
     ACell.Col := C;
     aCell.Row := RowCount -1;
     aCell.FontName := ffont.Name;
-    aCell.FontSize := 8;
-    aCell.FontColor := clWhite;
+    aCell.FontSize := ffont.Size;
+    aCell.FontColor := ffont.Color;
     aCell.BackColor := Backcolor;
 
     TotCellWidth := GetTotCellWidth ( ACell.Col -1 ); // somma colWidth fino a i-1
@@ -324,7 +331,6 @@ begin
     fCells.Add(aCell);
     Inc (C);
   end;
-//  fRowCount := Rows.Count;
   GridUpdate:= false;
 end;
 procedure SE_grid.RemoveRow ( const idx: integer );
@@ -451,6 +457,7 @@ begin
       fcells[i].Sprite.Guid := IntToStr(fcells[i].Col) +':'+IntToStr(fcells[i].Row);
     end;
   end;
+
 
   GridUpdate:= false;
   ReleaseMutex(Mutex);
@@ -705,6 +712,27 @@ begin
 
 end;
 
+Function SE_grid.GetTotalCellWidth : integer;
+var
+  i: integer;
+begin
+  Result := 0;
+  for I := 0 to Columns.count -1 do begin
+    Result := Result + Columns[i].Width ;
+  end;
+
+end;
+Function SE_grid.GetTotalCellHeight: integer;
+var
+  i: integer;
+begin
+
+  Result := 0;
+  for I := 0 to Rows.Count -1 do begin
+    Result := Result + Rows[i].Height ;
+  end;
+
+end;
 Function SE_grid.GetTotCellWidth ( Limit: integer ): integer;
 var
   i: integer;
@@ -713,7 +741,6 @@ begin
   if Limit < 0 then
     exit;
 
-  Result := 0;
   for I := 0 to Limit do begin
     Result := Result + Columns[i].Width ;
   end;
@@ -761,7 +788,7 @@ begin
       FOnGridCellmouseUp( self,  Button, Shift, CellX, CellY, lstSprite[0] );
     end;
 end;
-procedure SE_Grid.MySpriteMouseMove(Sender: TObject; lstSprite: TObjectList<SE_Sprite>; Shift: TShiftState);
+procedure SE_Grid.MySpriteMouseMove(Sender: TObject; lstSprite: TObjectList<SE_Sprite>; Shift: TShiftState; var Handled: boolean);
 var
   CellX,CellY: integer;
 begin
