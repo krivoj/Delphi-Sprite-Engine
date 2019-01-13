@@ -2926,22 +2926,22 @@ i: integer;
 begin
 
   if not (csDesigning in ComponentState) then  begin
-    FActive := false;
-    thrdAnimate.Enabled := False;
+    if not Passive then begin
+      FActive := false;
+      thrdAnimate.Enabled := False;
+      thrdAnimate.Free;
+    end;
     for i := lstEngines.Count - 1 downto 0 do
     begin
       lstEngines[i].RemoveAllSprites ;
       DetachSpriteEngine(lstEngines[i]);
     end;
 
-   // lsTEngines.Free;
-
     FreeAndNil(fVisibleBitmap);
     FreeAndNil(fVirtualBitmap);
     lstSpriteClicked.free;
     lstSpriteMoved.Free;
     lsTEngines.free;
-    thrdAnimate.Free;
   end;
 
   inherited;
