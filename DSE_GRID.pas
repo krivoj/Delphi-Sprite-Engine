@@ -133,7 +133,6 @@ end;
 
 constructor SE_Grid.Create(Owner: TComponent);
 var
-  r: integer;
   m: string;
 begin
   ffont:= TFont.Create;
@@ -298,7 +297,7 @@ var
   C: integer;
   aCell: SE_Cell;
   aRow : SE_Row;
-  TotCellWidth,TotCellHeight,DstX,DstY,X: integer;
+  TotCellWidth,TotCellHeight: integer;
   bmp: SE_Bitmap;
 begin
   GridUpdate:= true;
