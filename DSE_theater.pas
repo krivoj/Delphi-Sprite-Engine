@@ -969,6 +969,7 @@ begin
     lBmp:= SE_Bitmap.Create ( bmpFilename );
     self.guid := Guid;
     stag:= Guid;
+    LifeSpan := 0;
 end;
 constructor SE_SubSprite.create (bmp:SE_Bitmap;Guid:string; x,y: integer; visible,transparent: boolean);
 begin
@@ -980,6 +981,7 @@ begin
     lBmp:= SE_Bitmap.Create ( bmp );
     self.guid := Guid;
     stag:= Guid;
+    LifeSpan := 0;
 end;
 destructor SE_SubSprite.Destroy;
 begin
@@ -2769,18 +2771,18 @@ begin
    for I := 0 to lstSubSprites.Count -1 do begin
       if lstSubSprites.Items [i].LifeSpan > 0 then  begin
         lstSubSprites.Items [i].LifeSpan := lstSubSprites.Items [i].LifeSpan -  FTheater.thrdAnimate.Interval ;
-        if lstSubSprites.Items [i].LifeSpan = 0 then begin
+        if lstSubSprites.Items [i].LifeSpan <= 0 then begin
            lstSubSprites.Items [i].Dead := true;
         end;
       end;
 
-    if lstSubSprites [i].lVisible  then
+    if (lstSubSprites [i].lVisible) and not (lstSubSprites.Items [i].Dead) then begin
 
       lstSubSprites [i].lBmp.CopyRectTo(fBMPCurrentFrame,0,0,
                               lstSubSprites [i].lx,lstSubSprites [i].ly,
                               lstSubSprites [i].lBmp.Width , lstSubSprites [i].lBmp.Height ,
                               lstSubSprites [i].ltransparent, lstSubSprites [i].lBmp.Bitmap.Canvas.Pixels [0,0]);
-
+    end;
    end;
   // fine gestione subsprites
 
@@ -2796,7 +2798,7 @@ begin
     end;
 
 
-    if lstLabels.Items [i].lVisible  then begin
+    if (lstLabels.Items [i].lVisible) and not (lstLabels.Items [i].Dead)  then begin
 
 
       fBMPCurrentFrame.Canvas.Font.Assign( lstLabels.Items[i].lFont );
