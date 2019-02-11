@@ -745,7 +745,6 @@ end;
 function SE_Bitmap.Allocate(aWidth, aHeight: integer): boolean;
 begin
     if fbitmap <> nil then fBitmap.PixelFormat := pf24bit;
-    result := true;
     FreeImage;
     fWidth := aWidth;
     fHeight := aHeight;

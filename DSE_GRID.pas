@@ -383,7 +383,7 @@ var
   R: integer;
   aCell: SE_Cell;
   aCol : SE_Col;
-  TotCellWidth,TotCellHeight,DstX,DstY,X: integer;
+  TotCellWidth,TotCellHeight: integer;
   bmp: SE_Bitmap;
 begin
   GridUpdate:= true;

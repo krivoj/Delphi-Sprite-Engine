@@ -1670,9 +1670,9 @@ begin
 
                   end;
                 end;
+                CollisionMatrix.Free;
               end
               else FOnCollision( self, lstSprites[i], lstSprites[k] );
-              CollisionMatrix.Free;
             end;
           end;
 NextSprite:
@@ -2180,8 +2180,6 @@ end;
 
 
 destructor SE_Sprite.Destroy;
-var
-  i: integer;
 begin
 
   FBMP.Free;
