@@ -244,7 +244,7 @@ begin
     SE_TimerThread(FThread).Stop;
     if not SE_TimerThread(FThread).Synchronizing then
 //     FreeAndNil(FThread)
-      FThread.Free
+       FThread.Free
     else begin
       SE_TimerThread(FThread).FreeOnTerminate := True;
       FThread := nil
@@ -253,7 +253,24 @@ begin
     end;
   end;
 end;
-
+{
+procedure TJvThreadTimer.StopTimer;
+begin
+  if FThread <> nil then
+  begin
+    TJvTimerThread(FThread).Stop;
+    if not TJvTimerThread(FThread).Synchronizing then
+      FreeAndNil(FThread)
+    else
+    begin
+      // We can't destroy the thread because it called us through Synchronize()
+      // and is waiting for our return. But we need to destroy it after it returned.
+      TJvTimerThread(FThread).FreeOnTerminate := True;
+      FThread := nil
+    end;
+  end;
+end;
+}
 procedure SE_ThreadTimer.UpdateTimer;
 var
   DoEnable: Boolean;
