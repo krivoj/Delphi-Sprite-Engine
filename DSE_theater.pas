@@ -2855,10 +2855,10 @@ begin
   if not (csDesigning in ComponentState) then begin
     if Not Passive then begin
       thrdAnimate := SE_ThreadTimer.Create(self);
-      thrdAnimate.KeepAlive := True;
+     //thrdAnimate.KeepAlive := True;
       thrdAnimate.Interval := 20;
       thrdAnimate.OnTimer :=  OnTimer ;
-      Active := true;
+     // Active := true;
     end;
   end;
 end;

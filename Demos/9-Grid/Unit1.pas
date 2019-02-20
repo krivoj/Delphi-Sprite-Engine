@@ -88,8 +88,10 @@ end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-  Reset;
 
+  Reset;
+  se_grid1.Active := True;
+  se_grid2.Active := True;
 end;
 procedure TForm1.reset;
 var

@@ -511,7 +511,7 @@ var
   bmp,tmp: SE_Bitmap;
   TextWidth,Diff: integer;
   aSize: TSize;
-  XOutput,YOutput: integer;
+  XOutput,YOutput,NewVirtualWidth,NewVirtualHeight: integer;
 begin
 
   if GridUpdate then exit;
@@ -521,8 +521,13 @@ begin
 
   end;
 
-  VirtualWidth :=  iMax (GetTotCellWidth ( ColCount -1), Width) ;
-  VirtualHeight := iMax (GetTotCellHeight ( RowCount -1), Height ) ;
+  NewVirtualWidth := iMax (GetTotCellWidth ( ColCount -1), Width) ;
+  NewVirtualHeight := iMax (GetTotCellHeight ( RowCount -1), Height ) ;
+
+  if NewVirtualWidth <> VirtualWidth then
+    VirtualWidth :=  NewVirtualWidth;
+  if NewVirtualHeight <> VirtualHeight then
+    VirtualHeight := NewVirtualHeight ;
 
   VirtualBitmap.Bitmap.Canvas.Brush.Color := BackColor;
   VirtualBitmap.FillRect(0,0,  VirtualWidth, VirtualHeight,BackColor);

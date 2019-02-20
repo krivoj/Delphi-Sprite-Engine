@@ -172,6 +172,8 @@ object Form1: TForm1
     Width = 97
     Height = 17
     Caption = 'PixelCollision'
+    Checked = True
+    State = cbChecked
     TabOrder = 6
     OnClick = CheckBox5Click
   end

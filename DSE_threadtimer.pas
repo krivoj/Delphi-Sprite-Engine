@@ -243,8 +243,8 @@ begin
   if FThread <> nil then  begin
     SE_TimerThread(FThread).Stop;
     if not SE_TimerThread(FThread).Synchronizing then
-//     FreeAndNil(FThread)
-       FThread.Free
+     FreeAndNil(FThread)
+//       FThread.Free
     else begin
       SE_TimerThread(FThread).FreeOnTerminate := True;
       FThread := nil

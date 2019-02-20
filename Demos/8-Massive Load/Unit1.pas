@@ -95,6 +95,8 @@ begin
   SpriteTree.ModPriority := 170;
   SpriteTree.CollisionIgnore := True;
 
+  SE_Characters.PixelCollision := CheckBox5.Checked ;
+
 end;
 function TForm1.GetIsoDirection (X1,Y1,X2,Y2:integer): integer;
 begin
