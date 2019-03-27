@@ -1,4 +1,5 @@
 unit DSE_GRID;
+{ TODO : fare ScrollBar Both e Horizontal forse con resize e color dinamici }
 { TODO : fare cellwidth personali }
 interface
 uses
@@ -11,6 +12,7 @@ uses
   Type TCellAlignmentH = ( HLeft, HCenter, HRight );
   Type TCellAlignmentV = ( VTop, VCenter, VBottom );
   Type SE_ProgressBarStyle = ( pbStandard, pbSingleLineTop,pbSingleLineCenter,pbSingleLineBottom );
+  type SE_ScrollBars = ( SBNone, SBVertical, SBHorizontal, SBBoth );
   type SE_Cell = Class
     Sprite: SE_Sprite;
     Guid: Integer;
@@ -60,6 +62,10 @@ uses
 
     GridUpdate: boolean;
 
+    fScrollbars: SE_ScrollBars;
+    DragScrollBar : SE_Sprite;
+//    fOnMouseLeave : TNotifyEvent;
+
     function GetColCount: integer;
     function GetRowCount: integer;
     procedure SetColCount ( const n: integer );
@@ -73,6 +79,8 @@ uses
     function GetTotalCellWidth : integer;
     function GetTotalCellHeight : integer;
     procedure SetFont ( v: TFont );
+    procedure SetScrollBars ( v: SE_ScrollBars );
+    procedure MouseLeave ( Sender : TObject );
   protected
     procedure Loaded; override;
     procedure MySpriteMouseDown(Sender: TObject; lstSprite: TObjectList<SE_Sprite>; Button: TMouseButton; Shift: TShiftState);
@@ -80,11 +88,19 @@ uses
     procedure MySpriteMouseUp(Sender: TObject; lstSprite: TObjectList<SE_Sprite>; Button: TMouseButton; Shift: TShiftState);
     procedure RefreshSurface(Sender: TObject); override;
 
+    procedure MouseMove( Shift: TShiftState; X, Y: Integer); override;
+
   public
     CellsEngine: SE_Engine;
+    ScrollBarsEngine: SE_Engine;
+      ScrollBarColor : TColor;
+      ScrollBarWidth : Integer;
+      ScrollBarHeight : Integer;
 
     Columns: TObjectList<SE_Col>;
     Rows: TObjectList<SE_Row>;
+
+
     constructor Create(Owner: TComponent); override;
     destructor Destroy; override;
 
@@ -96,6 +112,7 @@ uses
     Property DefaultRowHeight: integer read fDefaultRowHeight write fDefaultRowHeight default 32;
     property TotalCellsWidth : Integer read GetTotalCellWidth;
     property TotalCellsHeight : Integer read GetTotalCellHeight;
+    property ScrollBars : SE_ScrollBars read fScrollbars write SetScrollBars;
 
     procedure ClearData;
     procedure AddRow;
@@ -146,7 +163,17 @@ begin
     CellsEngine:= SE_Engine.Create(Owner);
     CellsEngine.fTheater := Self;
     Self.AttachSpriteEngine(CellsEngine);
+    CellsEngine.Priority := 1;
     IncPriority := 0;
+
+    ScrollBarsEngine:= SE_Engine.Create(Owner);
+    ScrollBarsEngine.fTheater := Self;
+    ScrollBarsEngine.Priority := MaxInt;
+    Self.AttachSpriteEngine(ScrollBarsEngine);
+    ScrollBarsEngine.RenderBitmap := VisibleRender;
+    ScrollBarsEngine.ClickSprites := True;
+    OnMouseLeave := MouseLeave;
+
  //   thrdAnimate.KeepAlive := false;
 
   end;
@@ -171,8 +198,8 @@ begin
         fCells[i].ProgressBar.Free;
       end;
     end;
-    fCells.Free;
-
+  //  fCells.Free;               // gli engline li libera il theater
+  //  ScrollBarsEngine.Free;
   end;
 
   inherited;
@@ -769,13 +796,51 @@ procedure SE_Grid.SetFont ( v: TFont );
 begin
   ffont.Assign(v);
 end;
+procedure SE_Grid.SetScrollBars ( v: SE_ScrollBars );
+var
+  aScrollBar : SE_Sprite;
+  bmp: SE_Bitmap;
+begin
+  if not (csDesigning in ComponentState) then begin
+
+    if fScrollbars = v then Exit;
+
+    fScrollbars := v;
+    if fScrollbars = SBNone then begin
+      ScrollBarsEngine.RemoveAllSprites;
+      DragScrollBar := nil;
+    end
+    else if fScrollbars = SBVertical then begin
+      bmp := SE_Bitmap.Create ( ScrollBarWidth, ScrollBarHeight );
+      bmp.Bitmap.Canvas.Brush.Color := ScrollBarColor ;
+      bmp.Bitmap.Canvas.FillRect( Rect( 0,0, ScrollBarWidth, ScrollBarHeight ));
+
+      Width := Width + ScrollBarWidth;
+      aScrollBar := ScrollBarsEngine.CreateSprite( bmp.Bitmap, Self.Name + '.vertical',1,1,1000, Self.Width - (ScrollBarWidth div 2 ) , ScrollBarHeight div 2   , false );
+      aScrollBar.Priority := MaxInt;
+      bmp.Free;
+
+      MouseScroll := False;
+      MousePan := False;
+
+    end;
+
+  end;
+end;
 
 procedure SE_Grid.MySpriteMouseDown(Sender: TObject; lstSprite: TObjectList<SE_Sprite>; Button: TMouseButton; Shift: TShiftState);
 var
-  CellX,CellY: integer;
+  CellX,CellY,i: integer;
 begin
 //    OldSpriteMouseDown (Button, Shift,X, Y);
     //inherited MouseDown;
+    for I := 0 to lstSprite.Count -1 do begin
+      if lstSprite[i].Engine = ScrollBarsEngine  then begin
+        DragScrollBar := lstSprite[i];
+        Exit;
+      end;
+    end;
+
     if Assigned( FOnGridCellmousedown ) and (lstSprite.Count > 0)  then begin
       CellX := StrtoInt(ExtractWordL (1,lstSprite[0].Guid,':'));
       CellY := StrtoInt(ExtractWordL (2,lstSprite[0].Guid,':'));
@@ -784,8 +849,15 @@ begin
 end;
 procedure SE_Grid.MySpriteMouseUp(Sender: TObject; lstSprite: TObjectList<SE_Sprite>; Button: TMouseButton; Shift: TShiftState);
 var
-  CellX,CellY: integer;
+  CellX,CellY,i: integer;
 begin
+//    for I := 0 to lstSprite.Count -1 do begin
+//      if lstSprite[i].Engine = ScrollBarsEngine  then begin
+        DragScrollBar := Nil;
+//        Exit;
+//      end;
+//    end;
+
     if Assigned( FOnGridCellmouseUp ) and (lstSprite.Count > 0)  then begin
       CellX := StrtoInt(ExtractWordL (1,lstSprite[0].Guid,':'));
       CellY := StrtoInt(ExtractWordL (2,lstSprite[0].Guid,':'));
@@ -794,8 +866,16 @@ begin
 end;
 procedure SE_Grid.MySpriteMouseMove(Sender: TObject; lstSprite: TObjectList<SE_Sprite>; Shift: TShiftState; var Handled: boolean);
 var
-  CellX,CellY: integer;
+  CellX,CellY,i: integer;
 begin
+
+  for I := 0 to lstSprite.Count -1 do begin
+    if lstSprite[i].Engine = ScrollBarsEngine  then begin
+      Handled := True;
+      Exit;
+    end;
+  end;
+
   if Assigned( FOnGridCellMouseMove )  then begin
       Handled := True;
       CellX := StrtoInt(ExtractWordL (1,lstSprite[0].Guid,':'));
@@ -803,6 +883,30 @@ begin
       FOnGridCellMouseMove( self, Shift, CellX, CellY, lstSprite[0]);
   end;
 end;
+procedure SE_grid.MouseMove(Shift: TShiftState; X, Y: Integer);
+var
+  aScrollBar: SE_Sprite;
+  tmp: Integer;
+begin
+    if DragScrollBar <> nil then begin
+      tmp := Y;
+      if tmp <  ( DragScrollBar.BmpCurrentFrame.Height div 2 ) then
+        tmp := DragScrollBar.BmpCurrentFrame.Height div 2
+        else if tmp > ( Height - DragScrollBar.BmpCurrentFrame.Height div 2 ) then
+          tmp := ( Height - DragScrollBar.BmpCurrentFrame.Height div 2 );
+
+      DragScrollBar.PositionY   :=  tmp;
+      SetViewXY( 0, Round( Y * ( VirtualHeight / Height ) ));
+
+    end;
+    inherited;
+end;
+procedure SE_grid.MouseLeave ( Sender : TObject );
+begin
+  DragScrollBar  := nil;
+  inherited;
+end;
+
 {
 procedure SE_Grid.MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var

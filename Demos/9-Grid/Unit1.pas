@@ -107,6 +107,11 @@ begin
   se_grid1.ColCount :=3;
   se_grid1.RowCount :=8;
 
+  SE_Grid1.ScrollBarWidth := 20;
+  SE_Grid1.ScrollBarHeight := 40;
+  SE_Grid1.ScrollBarColor := clYellow;
+  SE_Grid1.ScrollBars := SBVertical;
+
   for c := 0 to se_grid1.ColCount -1 do begin
     for r := 0 to se_grid1.RowCount -1 do begin
       se_grid1.Cells[c,r].BackColor := clNavy;

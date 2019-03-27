@@ -74,6 +74,8 @@ type
   SE_Theater = class(TCustomControl)
   private
 
+    fOnMouseLeave: TNotifyEvent;
+
     iCollisionDelay: Integer;
     fCollisionDelay: Integer;
     fBackColor: TColor;
@@ -172,7 +174,7 @@ type
     function GetHexDrawPoint( AHexCellSize : THexCellSize; ACol, ARow : Integer ) : TPoint;
     function GetHexCellPoints( AOffSet : TPoint; AHexCellSize : THexCellSize; ACol, ARow : Integer ): TpointArray7;
 
-
+    procedure CMMouseLeave(var Message: TMessage); message CM_MOUSELEAVE;
 
 
   protected
@@ -270,6 +272,7 @@ type
     property EngineCount: integer read GetEngineCount;
     property Engines[n: integer]: SE_Engine read GetEngine;
     property Active: Boolean read FActive write SetActive;
+    property OnMouseLeave: TNotifyEvent read fOnMouseLeave write fOnMouseLeave;
 
   published
 
@@ -2931,8 +2934,7 @@ begin
       thrdAnimate.Enabled := False;
       thrdAnimate.Free;
     end;
-    for i := lstEngines.Count - 1 downto 0 do
-    begin
+    for i := lstEngines.Count - 1 downto 0 do begin
       lstEngines[i].RemoveAllSprites ;
       DetachSpriteEngine(lstEngines[i]);
     end;
@@ -3340,6 +3342,12 @@ end;
 procedure SE_Theater.WMEraseBkgnd(var Message: TMessage);
 begin
   Message.Result := 0;
+end;
+procedure SE_Theater.CMMouseLeave(var Message: TMessage);
+begin
+  inherited;
+  if assigned(fOnMouseLeave) then
+    fOnMouseLeave(Self);
 end;
 
 procedure SE_Theater.SetViewXY(x, y: integer);

@@ -1846,12 +1846,28 @@ Begin
 //          dst.R := MixBytes (dst.r, src.R, Byte(Trunc(alpha)) );
 //          dst.G := MixBytes (dst.g, src.G, Byte(Trunc(alpha)) );
 //          dst.B := MixBytes (dst.b, src.B, Byte(Trunc(alpha)) );
-        for i := -255 to 255 do
-          Table[i] := (Round( FAlpha) * i) shr 8;
 
-          dst.b := Table[src.b - dst.b] + dst.b;
-          dst.g := Table[src.b - dst.g] + dst.g;
-          dst.r := Table[src.b - dst.r] + dst.r;
+//        for i := -255 to 255 do
+//          Table[i] := (Round( FAlpha) * i) shr 8;
+//          dst.b := Table[src.b - dst.b] + dst.b;
+//          dst.g := Table[src.b - dst.g] + dst.g;
+//          dst.r := Table[src.b - dst.r] + dst.r;
+
+//          dst.r := (dst.r * (256 - Trunc(Alpha)) + pixAlpha.r * Trunc(Alpha)) shr 8;    // al posto di pixelalpha src ... inverte l'effetto
+//          dst.g := (dst.g * (256 - Trunc(Alpha)) + pixAlpha.g * Trunc(Alpha)) shr 8;
+//          dst.b := (dst.b * (256 - Trunc(Alpha)) + pixAlpha.b * Trunc(Alpha)) shr 8;
+
+          dst.r := (dst.r * (256 - Trunc(Alpha)) + src.r * Trunc(Alpha)) shr 8;    // al posto di pixelalpha src ... inverte l'effetto
+          dst.g := (dst.g * (256 - Trunc(Alpha)) + src.g * Trunc(Alpha)) shr 8;
+          dst.b := (dst.b * (256 - Trunc(Alpha)) + src.b * Trunc(Alpha)) shr 8;
+
+//          dst.r := (Trunc(Alpha) * (pixAlpha.r - dst.r) shr 8) + dst.r ;
+//          dst.g := (Trunc(Alpha) * (pixAlpha.g - dst.g) shr 8) + dst.g ;
+//          dst.b := (Trunc(Alpha) * (pixAlpha.b - dst.b) shr 8) + dst.b ;
+
+//          dst.r := (Trunc(Alpha) * (src.r - dst.r) shr 8) + dst.r ;
+//          dst.g := (Trunc(Alpha) * (src.g - dst.g) shr 8) + dst.g ;
+//          dst.b := (Trunc(Alpha) * (src.b - dst.b) shr 8) + dst.b ;
       end;
     SE_BlendOR:
       begin
