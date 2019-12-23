@@ -3,7 +3,7 @@
         <ProjectGuid>{C8BF0B87-32F2-43BC-8B8F-26048C3EB3AC}</ProjectGuid>
         <MainSource>DSE.dpk</MainSource>
         <ProjectVersion>18.0</ProjectVersion>
-        <FrameworkType>None</FrameworkType>
+        <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
@@ -39,7 +39,7 @@
         <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
         <SanitizedProjectName>DSE</SanitizedProjectName>
         <GenPackage>true</GenPackage>
-        <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;$(DCC_Namespace)</DCC_Namespace>
+        <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
         <DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
         <DCC_ExeOutput>.\$(Platform)\$(Config)</DCC_ExeOutput>
         <DCC_E>false</DCC_E>
@@ -64,8 +64,8 @@
         <DCC_RemoteDebug>true</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
-        <VerInfo_Build>32</VerInfo_Build>
-        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.32;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=;LastCompiledTime=2019/01/12 04:41:05</VerInfo_Keys>
+        <VerInfo_Build>53</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.53;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=;LastCompiledTime=2019/12/23 21:53:11</VerInfo_Keys>
         <DCC_RemoteDebug>false</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
@@ -92,6 +92,13 @@
         <DCCReference Include="DSE_Random.pas"/>
         <DCCReference Include="DSE_Grid.pas"/>
         <DCCReference Include="DSE_Panel.pas"/>
+        <DCCReference Include="RpgBrain.pas"/>
+        <DCCReference Include="RpgSprite.pas"/>
+        <DCCReference Include="ParseExpr.pas"/>
+        <DCCReference Include="ParseClass.pas"/>
+        <DCCReference Include="rpgtypes.pas"/>
+        <DCCReference Include="oObjects.pas"/>
+        <DCCReference Include="utils.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

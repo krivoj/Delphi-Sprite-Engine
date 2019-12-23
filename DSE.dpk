@@ -43,7 +43,14 @@ contains
   DSE_SearchFiles in 'DSE_SearchFiles.pas',
   DSE_Random in 'DSE_Random.pas',
   DSE_Grid in 'DSE_Grid.pas',
-  DSE_Panel in 'DSE_Panel.pas';
+  DSE_Panel in 'DSE_Panel.pas',
+  RpgBrain in 'RpgBrain.pas',
+  RpgSprite in 'RpgSprite.pas',
+  ParseExpr in 'ParseExpr.pas',
+  ParseClass in 'ParseClass.pas',
+  rpgtypes in 'rpgtypes.pas',
+  oObjects in 'oObjects.pas',
+  utils in 'utils.pas';
 
 end.
 

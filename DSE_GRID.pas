@@ -66,12 +66,12 @@ uses
     DragScrollBar : SE_Sprite;
 //    fOnMouseLeave : TNotifyEvent;
 
+    procedure ProcessAllCells;
     function GetColCount: integer;
     function GetRowCount: integer;
     procedure SetColCount ( const n: integer );
     procedure SetRowCount ( const n: integer );
     function GetCell ( Col, Row : integer ): SE_Cell;
-    procedure ProcessAllCells;
     procedure RoundBorder (bmp: TBitmap; w,h: Integer; CellBackColor :TColor);
     procedure SquareBorder (bmp: TBitmap; w,h: Integer; CellBackColor :TColor);
     function GetTotCellWidth ( Limit: integer ): integer;
