@@ -513,11 +513,11 @@ begin
     if bmp = nil then exit; // non ancora caricato
     
     if (fBmpstate = 'spell') and
-    (not fileexists( CharacterDir  +'\' + 'cached_' + SpriteName + '_' + fBmpstate + '.' + IsoDirection  + '.bmp' )) then
+    (not fileexists( CharacterDir  +'\' + fBmpstate + '.' + IsoDirection  + '.bmp' )) then
       fBmpstate := 'attack';
 
-    bmp.BmpName := CharacterDir  +'\' + 'cached_' + SpriteName + '_' + fBmpstate + '.' + IsoDirection  + '.bmp' ;
-    bmp.LoadFromFileBMP (  CharacterDir  +'\' + 'cached_' + SpriteName + '_' + fBmpstate + '.' + IsoDirection  + '.bmp' );
+    bmp.BmpName := CharacterDir  +'\'  + fBmpstate + '.' + IsoDirection  + '.bmp' ;
+    bmp.LoadFromFileBMP (  CharacterDir  +'\'  + fBmpstate + '.' + IsoDirection  + '.bmp' );
 //    bmpdefault.LoadFromFileBMP (  CharacterDir  +'\' + 'cached_' + SpriteName + '_' + fBmpstate + '.' + IsoDirection  + '.bmp' );
 
     ini:= TIniFile.Create( CharacterDir  +'\sprite.ini');
@@ -638,7 +638,7 @@ begin
 
 
    IsoDirection:= '1';
-   inherited Create(CharacterDir + 'cached_' + SpriteName + '_' + Bmpstate + '.' + IsoDirection  + '.bmp',
+   inherited Create(CharacterDir + Bmpstate + '.' + IsoDirection  + '.bmp',
           ids, FramesX, FramesY, AnimationInterval, posX, posY, TransparentSprite);
 
 

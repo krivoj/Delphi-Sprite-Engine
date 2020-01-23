@@ -428,6 +428,7 @@ type
 
     FPixelClick: Boolean;
     FPixelCollision: Boolean;
+    fHiddenSpritesMouseMove: Boolean;
     FIsoPriority: Boolean;
     FPriority: integer;
     FClickSprites: boolean;
@@ -479,6 +480,7 @@ type
     property ClickSprites: boolean read FClickSprites write FClickSprites default true;
     property PixelClick: boolean read FPixelClick write FPixelClick default false;
     property PixelCollision: boolean read FPixelCollision write FPixelCollision;
+    property HiddenSpritesMouseMove: boolean read FHiddenSpritesMouseMove write FHiddenSpritesMouseMove;
     property IsoPriority: boolean read FIsoPriority write FIsoPriority;
     property Priority: integer read FPriority write SetPriority;
     property Theater: SE_Theater read FTheater write SetTheater;
@@ -3573,7 +3575,7 @@ begin
     lstSpriteMoved.Clear ;
 
     for i := lstEngines.Count - 1 downTo 0 Do  begin
-      if not lstEngines[i].ClickSprites then
+      if not lstEngines[i].HiddenSpritesMouseMove then
         Continue;
       if lstEngines[i].RenderBitmap = VisibleRender then begin
         pt.X:=X; // rimetto gli originali X Y
@@ -3585,7 +3587,7 @@ begin
       end;
       for s := lstEngines[i].lstSprites.Count - 1 downto 0 do begin
         spr := lstEngines[i].Sprites[s];
-        if spr.Visible then  begin
+        if (spr.Visible) or ( lstEngines[i].HiddenSpritesMouseMove ) then  begin
           if spr.DrawingRect.Contains ( pt ) then begin
             bmpX:= spr.DrawingRect.Right  - pt.X    ; // <--- sul virtualBitmap
             bmpX:= spr.DrawingRect.Width - bmpX;
