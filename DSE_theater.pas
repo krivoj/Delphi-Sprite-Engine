@@ -469,6 +469,8 @@ type
 
     procedure Clear;
     procedure RemoveAllSprites;
+    procedure HideAllSprites; overload;
+    procedure HideAllSprites ( Name:string ); overload;
     procedure RemoveSprite( ASprite: SE_Sprite );
     property SpriteCount: integer read GetSpriteCount;
     property Sprites[n: integer]: SE_Sprite read GetSprite;
@@ -1142,7 +1144,7 @@ begin
    lstEngines.sort(TComparer<SE_Engine>.Construct(
    function (const L, R: SE_Engine): integer
    begin
-      result := trunc(R.Priority  - L.Priority  );
+      result := R.Priority  - L.Priority  ;
    end
   ));
 
@@ -1223,7 +1225,7 @@ begin
   lstEngines.sort(TComparer<SE_Engine>.Construct(
    function (const L, R: SE_Engine): integer
    begin
-     result := trunc(L.Priority  - R.Priority  );
+     result := R.Priority  - L.Priority  ;
    end
   ));
 end;
@@ -1812,7 +1814,7 @@ begin
    lstSprites.sort(TComparer<SE_Sprite>.Construct(
    function (const L, R: SE_Sprite): integer
    begin
-      result := trunc(L.Priority  - R.Priority  );
+      result := R.Priority  - L.Priority  ;
    end
   ));
 
@@ -1889,6 +1891,21 @@ begin
   for i := lstSprites.Count - 1 downto 0 do
     RemoveSprite( Sprites[i] );
 end;
+procedure SE_Engine.HideAllSprites;
+var
+  i: integer;
+begin
+  for i := lstSprites.Count - 1 downto 0 do
+    Sprites[i].Visible := False;
+end;
+procedure SE_Engine.HideAllSprites ( Name:string);
+var
+  i: integer;
+begin
+  for i := lstSprites.Count - 1 downto 0 do begin
+    if ContainsText ( Sprites[i].Guid, Name ) then  Sprites[i].Visible := False;
+  end;
+end;
 
 procedure SE_Engine.RenderSprites;
 var
@@ -1897,7 +1914,7 @@ begin
 
 //  if (Theater <> nil) and (lstSprites.Count > 0) then
   if (FVisible) and (Theater <> nil) then begin
-    for i := 0 to lstSprites.Count - 1 do  begin
+    for i := lstSprites.Count - 1 downto 0 do  begin
       lstSprites[i].SetCurrentFrame ;
      // application.ProcessMessages ;
       if lstSprites[i].Visible then lstSprites[i].Render ( FRenderBitmap );
@@ -2118,7 +2135,7 @@ begin
 
  FBMPCurrentFrame.Bitmap.PixelFormat :=  pf24bit;
 
-   FBMP.CopyRectTo(fBMPCurrentFrame,RectSource.left,RectSource.top,0,0,RectSource.Width+1,RectSource.Height+1,false  ,0) ;  //irargb
+   FBMP.CopyRectTo(fBMPCurrentFrame,RectSource.left,RectSource.top,0,0,RectSource.Width+1,RectSource.Height+1,false  , 0 ) ;  //irargb
 
   FFrameWidth := FBMPCurrentFrame.Width;
   FFrameHeight := FBMPCurrentFrame.height;
@@ -2805,8 +2822,9 @@ begin
 
 
       fBMPCurrentFrame.Canvas.Font.Assign( lstLabels.Items[i].lFont );
-      fBMPCurrentFrame.Canvas.pen.mode := lstLabels.Items[i].lpenmode ;
-      fBMPCurrentFrame.Canvas.pen.Color :=  fBMPCurrentFrame.Canvas.Font.Color;
+//      fBMPCurrentFrame.Canvas.pen.mode := lstLabels.Items[i].lpenmode ;
+//      fBMPCurrentFrame.Canvas.pen.Color :=  fBMPCurrentFrame.Canvas.Font.Color;
+      fBMPCurrentFrame.Canvas.Font.Color := lstLabels.Items[i].lFont.Color;
       fBMPCurrentFrame.Canvas.Brush.Style := bsClear;
       fBMPCurrentFrame.Canvas.Font.Quality :=  fqAntialiased;
 
@@ -2819,6 +2837,7 @@ begin
       end
       else
       fBMPCurrentFrame.Canvas.TextOut(lstLabels.Items[i].lX , lstLabels.Items[i].lY, lstLabels.Items[i].lText  ) ;
+      fBMPCurrentFrame.Canvas.Brush.Style := bsSolid;
 
 
     end;
@@ -3575,8 +3594,8 @@ begin
     lstSpriteMoved.Clear ;
 
     for i := lstEngines.Count - 1 downTo 0 Do  begin
-      if not lstEngines[i].HiddenSpritesMouseMove then
-        Continue;
+      //if not lstEngines[i].HiddenSpritesMouseMove then
+      //  Continue;
       if lstEngines[i].RenderBitmap = VisibleRender then begin
         pt.X:=X; // rimetto gli originali X Y
         pt.Y:=Y;
@@ -3587,7 +3606,7 @@ begin
       end;
       for s := lstEngines[i].lstSprites.Count - 1 downto 0 do begin
         spr := lstEngines[i].Sprites[s];
-        if (spr.Visible) or ( lstEngines[i].HiddenSpritesMouseMove ) then  begin
+        if (spr.Visible) or (  not (spr.Visible) and (lstEngines[i].HiddenSpritesMouseMove) ) then  begin
           if spr.DrawingRect.Contains ( pt ) then begin
             bmpX:= spr.DrawingRect.Right  - pt.X    ; // <--- sul virtualBitmap
             bmpX:= spr.DrawingRect.Width - bmpX;
