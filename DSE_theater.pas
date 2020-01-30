@@ -13,7 +13,7 @@ type
   SE_Theater = class;
   SE_Engine =  class;
   SE_Sprite = class;
-
+  SE_SpriteProgressBar = class;
 
   SE_TheaterEvent = procedure( Sender: TObject; VirtualBitmap, VisibleBitmap: SE_Bitmap ) of object;
   TCollisionEvent = procedure( Sender: TObject; Sprite1, Sprite2: SE_Sprite ) of object;
@@ -59,15 +59,15 @@ type
     lX : Integer;
     lY : Integer;
     lFont: TFont;
+    lFontSize: Integer;
     lText : String;
-    lpenMode: TPenMode;
     lVisible: Boolean;
     lBackColor: TColor;
     itag: integer;
     stag: string;
     LifeSpan: Integer;
     Dead: boolean;
-  constructor create (x,y: integer; FontName: string; FontColor, BackColor: TColor; atext: string;aPenMode: TPenMode; visible: boolean);
+  constructor create (x,y: integer; FontName: string; FontColor, BackColor: TColor; FontSize: Integer; atext: string; visible: boolean);
   destructor Destroy;override;
   end;
 
@@ -466,6 +466,9 @@ type
     function CreateSprite( const FileName,Guid: string; nFramesX, nFramesY, nDelay, posX, posY: integer; const Transparent: boolean ): SE_Sprite;overload;
     function CreateSprite(const bmp: TBitmap; const Guid: string; nFramesX, nFramesY, nDelay, posX, posY: integer; const Transparent: boolean  ): SE_Sprite; overload;
     procedure AddSprite(aSprite: SE_Sprite) ;
+    function CreateSpriteProgressBar(const Guid: string; posX, posY, Width,Height: integer; aFontName: string;
+     aFontColor, aBarColor, aBackColor: TColor; aFontSize: Integer; aText: string; aValue: integer; aTransparent: boolean ): SE_SpriteProgressBar;
+
 
     procedure Clear;
     procedure RemoveAllSprites;
@@ -696,6 +699,21 @@ type
     property OnDestinationreachedPer : SE_SpriteEventDstReached read FOnDestinationreachedPerc write FOnDestinationreachedPerc;
 
 
+  end;
+
+  SE_SpriteProgressBar = class (SE_Sprite)
+  private
+  protected
+  public
+    Guid: string;
+    SpriteLabel: SE_SpriteLabel;
+    Text : String;
+    Value : Integer; // percentuale
+    BarColor: TColor;
+    BackColor: TColor;
+ // aggiorna il bmp interno ogni volta con fillrect
+  constructor create ( const guid: string; x,y,w,h: integer; aFontName: string; aFontColor, aBarColor, aBackColor: TColor; aFontSize: Integer; aText: string; aValue: integer; aTransparent: boolean );
+  destructor destroy; override;
   end;
 
   procedure GetLinePoints(X1, Y1, X2, Y2 : Integer; var PathPoints: dse_pathplanner.TPath); overload;
@@ -950,15 +968,15 @@ begin
   if result >180 then result:=result-360;
   if result<= -180 then result:=result+360;
 end;
-constructor SE_SpriteLabel.create ( x,y: integer; FontName: string; FontColor, BackColor: TColor; atext: string;aPenMode: TPenMode; visible: boolean);
+constructor SE_SpriteLabel.create ( x,y: integer; FontName: string; FontColor, BackColor: TColor; FontSize: Integer;atext: string; visible: boolean);
 begin
   lx := x;
   ly := y;
   lFont:= TFont.Create ;
   lFont.Name := FontName;
   lFont.Color := FontColor;
+  lFont.Size := FontSize;
   ltext:= atext;
-  lPenMode:= aPenMode;
   lVisible:= visible;
   lbackcolor := BackColor;
 end;
@@ -1497,6 +1515,24 @@ begin
   lstNewSprites.Add( ASprite );
   aSprite.Visible := true;
   Result:= aSprite;
+end;
+function SE_Engine.CreateSpriteProgressBar(const Guid: string; posX, posY, Width,Height: integer; aFontName: string;
+   aFontColor, aBarColor, aBackColor: TColor; aFontSize: Integer; aText: string; aValue: integer; aTransparent: boolean ): SE_SpriteProgressBar;
+var
+aSpriteProgressBar: SE_SpriteProgressBar;
+begin
+
+  aSpriteProgressBar:= SE_SpriteProgressBar.Create ( Guid, posX, posY, Width,Height, aFontName,aFontColor, aBarColor, aBackColor, aFontSize, aText,aValue, aTransparent) ;
+  aSpriteProgressBar.Theater := FTheater;
+  aSpriteProgressBar.FEngine := self;
+  aSpriteProgressBar.OnDestinationreached := aSpriteProgressBar.iOnDestinationReached ;// aSpriteReachdestination;
+  aSpriteProgressBar.Guid := Guid;
+
+//  if (posX >= 0) and (posY >=0) then aSprite.Position :=  Point(posX,posY);
+
+  lstNewSprites.Add( aSpriteProgressBar );
+  aSpriteProgressBar.Visible := true;
+  Result:= aSpriteProgressBar;
 end;
 procedure SE_Engine.AddSprite(aSprite: SE_Sprite) ;
 begin
@@ -2772,7 +2808,7 @@ var
 
   wTrans: dword;
   aTrgb: Trgb;
-  diff,textwidth: Integer;
+  diff,textwidth,diffx,diffy,TextHeight: Integer;
   DestBitmap: SE_Bitmap;
 begin
 
@@ -2825,6 +2861,7 @@ begin
 //      fBMPCurrentFrame.Canvas.pen.mode := lstLabels.Items[i].lpenmode ;
 //      fBMPCurrentFrame.Canvas.pen.Color :=  fBMPCurrentFrame.Canvas.Font.Color;
       fBMPCurrentFrame.Canvas.Font.Color := lstLabels.Items[i].lFont.Color;
+      fBMPCurrentFrame.Canvas.Font.Size := lstLabels.Items[i].lFont.Size;
       fBMPCurrentFrame.Canvas.Brush.Style := bsClear;
       fBMPCurrentFrame.Canvas.Font.Quality :=  fqAntialiased;
 
@@ -2837,13 +2874,31 @@ begin
       end
       else
       fBMPCurrentFrame.Canvas.TextOut(lstLabels.Items[i].lX , lstLabels.Items[i].lY, lstLabels.Items[i].lText  ) ;
-      fBMPCurrentFrame.Canvas.Brush.Style := bsSolid;
+      //fBMPCurrentFrame.Canvas.Brush.Style := bsSolid;
 
 
     end;
    end;
 
+   if SpriteFileName = 'TProgressBar'  then begin
+     // fBMPCurrentFrame.Canvas.Brush.Style := bsSolid;
+      fBMPCurrentFrame.Canvas.Brush.Color := SE_SpriteProgressBar(Self).BackColor;
+      fBMPCurrentFrame.Canvas.FillRect( Rect(0,0,fBMPCurrentFrame.Width,fBMPCurrentFrame.Height ) );
+      fBMPCurrentFrame.Canvas.Brush.Color := SE_SpriteProgressBar(Self).BarColor;
+      fBMPCurrentFrame.Canvas.FillRect( Rect(0,0, ( SE_SpriteProgressBar(Self).Value* fBMPCurrentFrame.Width ) div 100 ,fBMPCurrentFrame.Height));
 
+      fBMPCurrentFrame.Canvas.Font.Assign( SE_SpriteProgressBar(Self).SpriteLabel.lFont );
+      fBMPCurrentFrame.Canvas.Font.Color := SE_SpriteProgressBar(Self).SpriteLabel.lFont.Color;
+      fBMPCurrentFrame.Canvas.Font.Size := SE_SpriteProgressBar(Self).SpriteLabel.lFont.Size;
+      fBMPCurrentFrame.Canvas.Brush.Style := bsClear;
+      fBMPCurrentFrame.Canvas.Font.Quality :=  fqAntialiased;
+      textWidth:=fBMPCurrentFrame.Canvas.TextWidth( SE_SpriteProgressBar(Self).Text) ;
+      DiffX := ((FFrameWidth - textWidth) div 2);
+      textHeight:=fBMPCurrentFrame.Canvas.TextHeight( SE_SpriteProgressBar(Self).Text) ;
+      DiffY := ((FFrameHeight - textHeight) div 2);
+      fBMPCurrentFrame.Canvas.TextOut ( diffx , diffy, SE_SpriteProgressBar(Self).Text  ) ;
+//      fBMPCurrentFrame.Canvas.Brush.Style := bsSolid;
+   end;
 
    if Transparent then begin
 
@@ -2886,6 +2941,84 @@ begin
     end;
   end;
 end;
+constructor SE_SpriteProgressBar.Create ( const guid: string; x,y,w,h: integer; aFontName: string; aFontColor, aBarColor, aBackColor: TColor; aFontSize: Integer; aText: string; aValue: integer; aTransparent: boolean );
+var
+rectSource: TRect;
+begin
+  Destinationreached := true;
+  FAnimated := false ;
+  Self.Guid:= Guid;
+  FMoverData:= SE_SpriteMoverData.Create;
+  FMoverData.FSprite := self;
+  FPositionX:= X;
+  FPositionY:= Y;
+
+  SpriteLabel := SE_SpriteLabel.create ( 0,0,aFontName,aFontColor,0,aFontSize,aText,true );
+  SpriteLabel.lFont.Name := aFontName;
+  SpriteLabel.lFont.Color := aFontColor;
+  SpriteLabel.lFont.Size := aFontSize;
+  SpriteLabel.lText := aText;
+
+  fpause    :=false;
+
+  FramesX  := 1;
+  FramesY  := 1;
+  FrameXMin  := 0;
+  FrameXMax  := 0;
+  FAnimationInterval := 1000;
+  fDelay:=0;
+
+  BarColor := aBarColor;
+
+
+  FBMP:= SE_Bitmap.Create( w, h );
+  FBMP.Canvas.Brush.Style := bsSolid;
+  FBMP.Canvas.Brush.Color := Barcolor;
+  FBMP.Canvas.FillRect( Rect(0,0,w,h) );
+  //  FBMP.Assign(bmp);
+  inherited create ( FBMP.Bitmap, guid, 1,1,1000,x,y, aTransparent) ;
+  SpriteFileName:= 'TProgressBar';
+
+
+  FBMPCurrentFrame:=SE_Bitmap.Create (FBMP.Width div FramesX , FBMP.height div FramesY );
+
+  FBMPalpha :=  SE_Bitmap.Create(FBMP.Width,FBMP.Height);   // crea un bmp alpha comunque
+  FBMPCurrentFramealpha :=  SE_Bitmap.Create(FBMPCurrentFrame.Width,FBMPCurrentFrame.Height);   // crea un bmp alpha comunque
+
+  fBmp.fbitmapAlpha := FBMPalpha.Bitmap ;
+  fBmpCurrentFrame.fbitmapAlpha := FBMPCurrentFrameAlpha.Bitmap ;
+
+  //glielo devo passare già tagliato e poi andrà bene
+    with rectSource do begin
+      Left := 0;
+      Top := 0;
+      Right := ( FBMP.Width div FramesX)-1;
+      Bottom :=( FBMP.Height div FramesY)-1;
+    end;
+
+
+  FBMPCurrentFrame.Bitmap.PixelFormat :=  pf24bit;
+
+  FBMP.CopyRectTo(fBMPCurrentFrame,RectSource.left,RectSource.top,0,0,RectSource.Width+1,RectSource.Height+1,false  , 0 ) ;  //irargb
+
+  FFrameWidth := FBMPCurrentFrame.Width;
+  FFrameHeight := FBMPCurrentFrame.height;
+
+  FOnDestinationReached := iOnDestinationReached ;
+  FOnDestinationReachedPerc := iOnDestinationReachedPerc ;
+
+
+  Transparent := aTransparent;
+
+
+end;
+destructor SE_SpriteProgressBar.Destroy; //--> distrugge la spriteLabel, poi inherited
+begin
+  SpriteLabel.Free;
+  inherited;
+end;
+
+
 constructor SE_Theater.Create(Owner: TComponent);
 begin
 

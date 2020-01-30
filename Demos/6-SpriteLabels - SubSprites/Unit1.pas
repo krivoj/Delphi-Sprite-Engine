@@ -274,12 +274,12 @@ begin
 
    SpriteGabriel.labels.Clear ;
 
-   SpriteLabel := SE_SpriteLabel.create(0,64,'Verdana',clYellow,clBlack,'Gabriel',pmCopy,True);
+   SpriteLabel := SE_SpriteLabel.create(0,64,'Verdana',clYellow,clBlack,8,'Gabriel',True);
    SpriteGabriel.Labels.Add(SpriteLabel);
 
    SpriteShahira.labels.Clear ;
 
-   SpriteLabel := SE_SpriteLabel.create(0,64,'Verdana',clYellow,clBlack,'Shahira',pmCopy,True);
+   SpriteLabel := SE_SpriteLabel.create(0,64,'Verdana',clYellow,clBlack,8,'Shahira',True);
    SpriteShahira.Labels.Add(SpriteLabel);
 
 end;

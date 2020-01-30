@@ -169,6 +169,7 @@ object Form1: TForm1
   object SE_Background: SE_Engine
     ClickSprites = False
     PixelCollision = False
+    HiddenSpritesMouseMove = False
     IsoPriority = False
     Priority = 0
     Theater = SE_Theater1
@@ -177,6 +178,7 @@ object Form1: TForm1
   end
   object SE_Characters: SE_Engine
     PixelCollision = False
+    HiddenSpritesMouseMove = False
     IsoPriority = True
     Priority = 1
     Theater = SE_Theater1
