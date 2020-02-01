@@ -2866,6 +2866,7 @@ begin
       fBMPCurrentFrame.Canvas.Font.Quality :=  fqAntialiased;
 
       if lstLabels.Items[i].lX =-1 then begin    // -1 Center X
+
           textWidth:=fBMPCurrentFrame.Canvas.TextWidth(lstLabels.Items[i].lText) ;
           Diff := ((FFrameWidth - textWidth) div 2);
           fBMPCurrentFrame.Canvas.TextOut ( diff ,
@@ -3618,7 +3619,7 @@ begin
   lstSpriteClicked.clear;
     for i := lstEngines.Count - 1 downTo 0 Do  begin
 
-      if not lstEngines[i].ClickSprites then  Continue;
+      if (not lstEngines[i].ClickSprites) or (not lstengines[i].Visible) then  Continue;
       if lstEngines[i].RenderBitmap = VisibleRender then begin
         pt.X:=X; // rimetto gli originali X Y
         pt.Y:=Y;
@@ -3727,8 +3728,8 @@ begin
     lstSpriteMoved.Clear ;
 
     for i := lstEngines.Count - 1 downTo 0 Do  begin
-      //if not lstEngines[i].HiddenSpritesMouseMove then
-      //  Continue;
+      if not lstEngines[i].visible then
+        Continue;
       if lstEngines[i].RenderBitmap = VisibleRender then begin
         pt.X:=X; // rimetto gli originali X Y
         pt.Y:=Y;
@@ -3825,7 +3826,7 @@ begin
 
   lstSpriteClicked.Clear ;
     for i := lstEngines.Count - 1 downTo 0 Do begin
-      if not lstEngines[i].ClickSprites then   Continue;
+      if (not lstEngines[i].ClickSprites) or ( not lstengines[i].Visible) then   Continue;
       if lstEngines[i].RenderBitmap = VisibleRender then begin
         pt.X:=X; // rimetto gli originali X Y
         pt.Y:=Y;
