@@ -1,6 +1,6 @@
 unit DSE_theater;
 //{$Define nagscreen}
-{$Define Angle} { TODO : verificare eventuali bug  }
+{$Define Angle}
 interface
 
 uses
@@ -471,7 +471,8 @@ type
 
 
     procedure Clear;
-    procedure RemoveAllSprites;
+    procedure RemoveAllSprites; overload;
+    procedure RemoveAllSprites ( Name:string ); overload;
     procedure HideAllSprites; overload;
     procedure HideAllSprites ( Name:string ); overload;
     procedure RemoveSprite( ASprite: SE_Sprite );
@@ -1919,6 +1920,14 @@ begin
 
 
 end;
+procedure SE_Engine.RemoveAllSprites ( Name: String );
+var
+  i: integer;
+begin
+  for i := lstSprites.Count - 1 downto 0 do
+     if ContainsText ( Sprites[i].Guid, Name ) then
+      RemoveSprite( Sprites[i] );
+end;
 
 procedure SE_Engine.RemoveAllSprites;
 var
@@ -2856,14 +2865,12 @@ begin
 
     if (lstLabels.Items [i].lVisible) and not (lstLabels.Items [i].Dead)  then begin
 
-
       fBMPCurrentFrame.Canvas.Font.Assign( lstLabels.Items[i].lFont );
-//      fBMPCurrentFrame.Canvas.pen.mode := lstLabels.Items[i].lpenmode ;
-//      fBMPCurrentFrame.Canvas.pen.Color :=  fBMPCurrentFrame.Canvas.Font.Color;
       fBMPCurrentFrame.Canvas.Font.Color := lstLabels.Items[i].lFont.Color;
       fBMPCurrentFrame.Canvas.Font.Size := lstLabels.Items[i].lFont.Size;
       fBMPCurrentFrame.Canvas.Brush.Style := bsClear;
       fBMPCurrentFrame.Canvas.Font.Quality :=  fqAntialiased;
+         // if Guid ='btn_marketvalue' then asm int 3; end;
 
       if lstLabels.Items[i].lX =-1 then begin    // -1 Center X
 
@@ -3630,8 +3637,7 @@ begin
       end;
       for s := lstEngines[i].lstSprites.Count - 1 downto 0 do begin
         spr := lstEngines[i].Sprites[s];
-        if spr.Visible then
-        begin
+        if spr.Visible then begin
           if spr.DrawingRect.Contains ( pt ) then begin
             bmpX:= spr.DrawingRect.Right  - pt.X    ; // <--- sul virtualBitmap
             bmpX:= spr.DrawingRect.Width - bmpX;
