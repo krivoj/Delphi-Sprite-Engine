@@ -501,7 +501,7 @@ type
 
   SE_Sprite = class( TObject )
   private
-
+    ProgressBar : Boolean;
     FBMP, FBMPalpha: SE_Bitmap;
     FBMPCurrentFrame,FBMPCurrentFrameAlpha: SE_Bitmap;
     fchangingFrame: boolean;
@@ -1743,8 +1743,7 @@ begin
   Clear;
  // if FTheater <> nil then
 //    FTheater.DetachSpriteEngine( self );
-  lstNewSprites.free;
-  lstSprites.Free;
+
   lstEngines.Free;
   inherited Destroy;
 end;
@@ -2002,8 +2001,9 @@ end;
 
 procedure SE_Engine.Clear;
 begin
-    lstNewSprites.Clear;
-    lstSprites.Clear ;
+
+  lstNewSprites.Clear;
+  lstSprites.Clear ;
 end;
 
 
@@ -2247,6 +2247,8 @@ end;
 
 
 destructor SE_Sprite.Destroy;
+var
+  i: Integer;
 begin
 
   FBMP.Free;
@@ -2254,6 +2256,10 @@ begin
   FBMPalpha.free;
   FBMPCurrentFrameAlpha.Free;
   FMoverData.free;
+  for I := 0 to lstLabels.Count -1 do begin
+    lstLabels[i].lFont.Free;
+  end;
+
   lstLabels.Free;
   RemoveAllSubSprites;
   lstSubSprites.Free;
@@ -2953,6 +2959,7 @@ constructor SE_SpriteProgressBar.Create ( const guid: string; x,y,w,h: integer; 
 var
 rectSource: TRect;
 begin
+  ProgressBar := True;
   Destinationreached := true;
   FAnimated := false ;
   Self.Guid:= Guid;
@@ -3022,6 +3029,7 @@ begin
 end;
 destructor SE_SpriteProgressBar.Destroy; //--> distrugge la spriteLabel, poi inherited
 begin
+  SpriteLabel.lFont.Free;
   SpriteLabel.Free;
   inherited;
 end;
