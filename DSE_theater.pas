@@ -1744,7 +1744,8 @@ begin
   Clear;
  // if FTheater <> nil then
 //    FTheater.DetachSpriteEngine( self );
-
+  lstNewSprites.Free;
+  lstSprites.free;
   lstEngines.Free;
   inherited Destroy;
 end;
