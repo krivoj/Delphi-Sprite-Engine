@@ -58,11 +58,13 @@ type
     Transparent: boolean; // riguardo a lbmp ma al momento non usato singolarmente
     lX : Integer;
     lY : Integer;
-    lFont: TFont;
+    lFontName: string;
+    lFontStyle : TFontStyle;
     lFontSize: Integer;
+    lFontColor: TColor;
+    lBackColor: TColor;
     lText : String;
     lVisible: Boolean;
-    lBackColor: TColor;
     itag: integer;
     stag: string;
     LifeSpan: Integer;
@@ -973,10 +975,9 @@ constructor SE_SpriteLabel.create ( x,y: integer; FontName: string; FontColor, B
 begin
   lx := x;
   ly := y;
-  lFont:= TFont.Create ;
-  lFont.Name := FontName;
-  lFont.Color := FontColor;
-  lFont.Size := FontSize;
+  lFontName := FontName;
+  lFontColor := FontColor;
+  lFontSize := FontSize;
   ltext:= atext;
   lVisible:= visible;
   lbackcolor := BackColor;
@@ -2256,9 +2257,6 @@ begin
   FBMPalpha.free;
   FBMPCurrentFrameAlpha.Free;
   FMoverData.free;
-  for I := 0 to lstLabels.Count -1 do begin
-    lstLabels[i].lFont.Free;
-  end;
 
   lstLabels.Free;
   RemoveAllSubSprites;
@@ -2871,9 +2869,9 @@ begin
 
     if (lstLabels.Items [i].lVisible) and not (lstLabels.Items [i].Dead)  then begin
 
-      fBMPCurrentFrame.Canvas.Font.Assign( lstLabels.Items[i].lFont );
-      fBMPCurrentFrame.Canvas.Font.Color := lstLabels.Items[i].lFont.Color;
-      fBMPCurrentFrame.Canvas.Font.Size := lstLabels.Items[i].lFont.Size;
+      fBMPCurrentFrame.Canvas.Font.Name := lstLabels.Items[i].lFontName;
+      fBMPCurrentFrame.Canvas.Font.Color := lstLabels.Items[i].lFontColor;
+      fBMPCurrentFrame.Canvas.Font.Size := lstLabels.Items[i].lFontSize;
       fBMPCurrentFrame.Canvas.Brush.Style := bsClear;
       fBMPCurrentFrame.Canvas.Font.Quality :=  fqAntialiased;
          // if Guid ='btn_marketvalue' then asm int 3; end;
@@ -2901,9 +2899,9 @@ begin
       fBMPCurrentFrame.Canvas.Brush.Color := SE_SpriteProgressBar(Self).BarColor;
       fBMPCurrentFrame.Canvas.FillRect( Rect(0,0, ( SE_SpriteProgressBar(Self).Value* fBMPCurrentFrame.Width ) div 100 ,fBMPCurrentFrame.Height));
 
-      fBMPCurrentFrame.Canvas.Font.Assign( SE_SpriteProgressBar(Self).SpriteLabel.lFont );
-      fBMPCurrentFrame.Canvas.Font.Color := SE_SpriteProgressBar(Self).SpriteLabel.lFont.Color;
-      fBMPCurrentFrame.Canvas.Font.Size := SE_SpriteProgressBar(Self).SpriteLabel.lFont.Size;
+      fBMPCurrentFrame.Canvas.Font.Name := ( SE_SpriteProgressBar(Self).SpriteLabel.lFontName );
+      fBMPCurrentFrame.Canvas.Font.Color := SE_SpriteProgressBar(Self).SpriteLabel.lFontColor;
+      fBMPCurrentFrame.Canvas.Font.Size := SE_SpriteProgressBar(Self).SpriteLabel.lFontSize;
       fBMPCurrentFrame.Canvas.Brush.Style := bsClear;
       fBMPCurrentFrame.Canvas.Font.Quality :=  fqAntialiased;
       textWidth:=fBMPCurrentFrame.Canvas.TextWidth( SE_SpriteProgressBar(Self).Text) ;
@@ -2969,9 +2967,9 @@ begin
   FPositionY:= Y;
 
   SpriteLabel := SE_SpriteLabel.create ( 0,0,aFontName,aFontColor,0,aFontSize,aText,true );
-  SpriteLabel.lFont.Name := aFontName;
-  SpriteLabel.lFont.Color := aFontColor;
-  SpriteLabel.lFont.Size := aFontSize;
+  SpriteLabel.lFontName := aFontName;
+  SpriteLabel.lFontColor := aFontColor;
+  SpriteLabel.lFontSize := aFontSize;
   SpriteLabel.lText := aText;
 
   fpause    :=false;
@@ -3029,7 +3027,6 @@ begin
 end;
 destructor SE_SpriteProgressBar.Destroy; //--> distrugge la spriteLabel, poi inherited
 begin
-  SpriteLabel.lFont.Free;
   SpriteLabel.Free;
   inherited;
 end;
