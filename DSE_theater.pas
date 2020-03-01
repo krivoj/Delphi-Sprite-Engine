@@ -59,7 +59,7 @@ type
     lX : Integer;
     lY : Integer;
     lFontName: string;
-    lFontStyle : TFontStyle;
+    lFontStyle : TFontStyles;
     lFontSize: Integer;
     lFontColor: TColor;
     lBackColor: TColor;
@@ -205,7 +205,7 @@ type
     function GetVisibleBitmap: SE_Bitmap;
     function GetVirtualBitmap: SE_Bitmap;
 
-    // iratheater
+    // theater
     procedure AttachSpriteEngine( AEngine: SE_Engine );
     procedure DetachSpriteEngine( AEngine: SE_Engine );
     function GetMouseX( X: integer ): integer;
@@ -456,7 +456,6 @@ type
 
     procedure Notification( AComponent: TComponent; Operation: TOperation ); override;
     procedure RenderSprites;
-    procedure SortSprites;
   public
 
     FTheater: SE_Theater;
@@ -582,6 +581,7 @@ type
 
     procedure SetTransparent(const Value: Boolean);
     procedure SetPriority(const Value: integer);
+    procedure SetModPriority(const Value: integer);
 
     function GetPositionX: single;
     function GetPositionY: single;
@@ -647,7 +647,7 @@ type
     property AutoRotate: boolean read fAutoRotate write fAutoRotate;
 
 
-    property ModPriority: integer read FModPriority write FModPriority;
+    property ModPriority: integer read FModPriority write SetModPriority;
     property Priority: integer read FPriority write SetPriority;
     property Engine: SE_Engine read FEngine;
     property MoverData: SE_SpriteMoverData read FMoverData write FMoverData;
@@ -1469,10 +1469,6 @@ begin
   ASprite.FMoverData.FDestinationY := Destination.Y;
   ASprite.FMoverData.CalculateVectors(  );
 end;
-procedure SE_Engine.SortSprites;
-begin
-  FSortNeeded := true;
-end;
 procedure SE_Engine.SetVisible(const Value: boolean);
 begin
   FVisible := Value;
@@ -1841,28 +1837,18 @@ var
 begin
 
 (* Ordinamento Sprites in base a priority *)
-    if IsoPriority then begin
+  if IsoPriority then begin
 
-      for I := 0 to lstSprites.Count - 1 do  begin
-         lstSprites[i].Priority :=  lstSprites[i].Position.Y +  lstSprites[i].ModPriority;
-      end;
-
+    for I := lstSprites.Count - 1 downto 0 do  begin
+       lstSprites[i].Priority :=  lstSprites[i].Position.Y +  lstSprites[i].FModPriority;
     end;
-   FSortNeeded := false;
-   lstSprites.sort(TComparer<SE_Sprite>.Construct(
-   function (const L, R: SE_Sprite): integer
-   begin
-      result := R.Priority  - L.Priority  ;
-   end
-  ));
 
+  end;
   (* i nuovi sprite vanno nella lista principale *)
-
-
   while lstNewSprites.Count > 0 do  begin
     nIndex := -1;
     for i := 0 to lstSprites.Count - 1 do
-      if  lstNewSprites[0].Priority <=  lstSprites[i].Priority then
+      if  lstNewSprites[0].Priority >=  lstSprites[i].Priority then
       begin
         nIndex := i;
         Break;
@@ -1873,6 +1859,16 @@ begin
 
       lstSprites.Insert( nIndex, lstNewSprites[0] );
     lstNewSprites.Delete( 0 ); // <-- non libera l'oggetto, ha passato il puntatore
+  end;
+
+  if FSortNeeded then begin
+   lstSprites.sort(TComparer<SE_Sprite>.Construct(
+   function (const L, R: SE_Sprite): integer
+    begin
+        result := R.Priority  - L.Priority  ;
+     end
+    ));
+    FSortNeeded := false;
   end;
 
   // Movimento Sprites
@@ -2653,8 +2649,12 @@ end;
 procedure SE_Sprite.SetPriority(const Value: integer);
 begin
   FPriority := Value;
-  if FEngine <> nil then
-    FEngine.SorTSprites;
+  Engine.FSortNeeded := True;
+end;
+procedure SE_Sprite.SetModPriority(const Value: integer);
+begin
+  FModPriority := Value;
+  Engine.FSortNeeded := True;
 end;
 
 procedure SE_Sprite.SetFrameXmin (const Value: Integer);
@@ -2744,8 +2744,7 @@ var
   rectSource : TRect;
   NewWidth, Newheight: integer;
 begin
-    with rectSource do
-    begin
+    with rectSource do begin
       Left := FrameX * BMP.Width div FramesX;
       Top := (FrameY-1) * BMP.Height div FramesY;
       Right := (Left + BMP.Width div FramesX)-1;
@@ -2800,7 +2799,7 @@ begin
       fBmpCurrentFrameAlpha.Stretch(NewWidth,NewHeight);
     end;
   end;
-  if fGrayscaled then fBmpCurrentFrame.GrayScale ;
+  //if fGrayscaled then fBmpCurrentFrame.GrayScale ;
 
 
 
@@ -2824,6 +2823,7 @@ var
   aTrgb: Trgb;
   diff,textwidth,diffx,diffy,TextHeight: Integer;
   DestBitmap: SE_Bitmap;
+  NewWidth, NewHeight : Integer;
 begin
 
     
@@ -2873,6 +2873,7 @@ begin
       fBMPCurrentFrame.Canvas.Font.Name := lstLabels.Items[i].lFontName;
       fBMPCurrentFrame.Canvas.Font.Color := lstLabels.Items[i].lFontColor;
       fBMPCurrentFrame.Canvas.Font.Size := lstLabels.Items[i].lFontSize;
+      fBMPCurrentFrame.Canvas.Font.Style := lstLabels.Items[i].lFontStyle;
       fBMPCurrentFrame.Canvas.Brush.Style := bsClear;
       fBMPCurrentFrame.Canvas.Font.Quality :=  fqAntialiased;
          // if Guid ='btn_marketvalue' then asm int 3; end;
@@ -2925,9 +2926,19 @@ begin
      end;
    end;
 
+  if Scale <> 0 then begin
+    NewWidth:= trunc (( fBmpCurrentFrame.Width * Scale ) / 100);
+    NewHeight:= trunc (( fBmpCurrentFrame.Height * Scale ) / 100);
+    if (NewWidth > 0) and (newheight > 0) then begin
+      fBmpCurrentFrame.Stretch(NewWidth,NewHeight);
+      if Alpha <> 0 then
+      fBmpCurrentFrameAlpha.Stretch(NewWidth,NewHeight);
+    end;
+  end;
+  if fGrayscaled then fBmpCurrentFrame.GrayScale ;
 
-    fBmpCurrentFrame.fbitmapAlpha := FBMPCurrentFrameAlpha.Bitmap ;
-    fBmpCurrentFrame.CopyRectTo( DestBitmap,0,0,X,Y,fBmpCurrentFrame.Width+1, fBmpCurrentFrame.height+1,Transparent,wtrans ) ;
+   fBmpCurrentFrame.fbitmapAlpha := FBMPCurrentFrameAlpha.Bitmap ;
+   fBmpCurrentFrame.CopyRectTo( DestBitmap,0,0,X,Y,fBmpCurrentFrame.Width+1, fBmpCurrentFrame.height+1,Transparent,wtrans ) ;
 
 
 end;
@@ -3630,56 +3641,56 @@ begin
 
 
   lstSpriteClicked.clear;
-    for i := lstEngines.Count - 1 downTo 0 Do  begin
+  for i := 0 to lstEngines.Count - 1 Do  begin // da 0 in su per la priority. precedenza a priority più alta. downto solo nel render
 
-      if (not lstEngines[i].ClickSprites) or (not lstengines[i].Visible) then  Continue;
-      if lstEngines[i].RenderBitmap = VisibleRender then begin
-        pt.X:=X; // rimetto gli originali X Y
-        pt.Y:=Y;
-      end
-      else
-      begin    // ogni volta devo ribadire
-        pt := Point( XVisibleToVirtual(x), YVisibleToVirtual(y) );
-      end;
-      for s := lstEngines[i].lstSprites.Count - 1 downto 0 do begin
-        spr := lstEngines[i].Sprites[s];
-        if spr.Visible then begin
-          if spr.DrawingRect.Contains ( pt ) then begin
-            bmpX:= spr.DrawingRect.Right  - pt.X    ; // <--- sul virtualBitmap
-            bmpX:= spr.DrawingRect.Width - bmpX;
-            bmpY:= spr.DrawingRect.bottom - pt.Y;
-            bmpY:= spr.DrawingRect.Height - bmpY;
-            Spr.MouseX := bmpX;
-            Spr.MouseY := bmpY;
-            if spr.Transparent then begin          // Transaprent
-              if lstEngines[i].PixelClick then begin
-                if spr.fBMPCurrentFrame.Canvas.Pixels [BmpX,BmpY] <> spr.fBMPCurrentFrame.Canvas.Pixels [0,0] then begin
-                  if ( lstEngines[i].ClickSprites)
-                    then lstSpriteClicked.Add(spr);
-                end;
-              end
-              else begin
+    if (not lstEngines[i].ClickSprites) or (not lstengines[i].Visible) then  Continue;
+    if lstEngines[i].RenderBitmap = VisibleRender then begin
+      pt.X:=X; // rimetto gli originali X Y
+      pt.Y:=Y;
+    end
+    else
+    begin    // ogni volta devo ribadire
+      pt := Point( XVisibleToVirtual(x), YVisibleToVirtual(y) );
+    end;
+    for s := 0 to lstEngines[i].lstSprites.Count - 1 do begin  // da 0 in su per la priority. precedenza a priority più alta
+      spr := lstEngines[i].Sprites[s];
+      if spr.Visible then begin
+        if spr.DrawingRect.Contains ( pt ) then begin
+          bmpX:= spr.DrawingRect.Right  - pt.X    ; // <--- sul virtualBitmap
+          bmpX:= spr.DrawingRect.Width - bmpX;
+          bmpY:= spr.DrawingRect.bottom - pt.Y;
+          bmpY:= spr.DrawingRect.Height - bmpY;
+          Spr.MouseX := bmpX;
+          Spr.MouseY := bmpY;
+          if spr.Transparent then begin          // Transaprent
+            if lstEngines[i].PixelClick then begin
+              if spr.fBMPCurrentFrame.Canvas.Pixels [BmpX,BmpY] <> spr.fBMPCurrentFrame.Canvas.Pixels [0,0] then begin
                 if ( lstEngines[i].ClickSprites)
                   then lstSpriteClicked.Add(spr);
               end;
             end
-            else begin  // no transparent
+            else begin
+              if ( lstEngines[i].ClickSprites)
+                then lstSpriteClicked.Add(spr);
+            end;
+          end
+          else begin  // no transparent
 //                bmpX:= spr.DrawingRect.Right  - pt.X    ; // <--- sul virtualBitmap
 //                bmpX:= spr.DrawingRect.Width - bmpX;
 //                bmpY:= spr.DrawingRect.bottom - pt.Y;
 //                bmpY:= spr.DrawingRect.Height - bmpY;
-                 if ( lstEngines[i].ClickSprites)
-                  then lstSpriteClicked.Add(spr); //<-- spr.MouseDown può disabilitare spriteclick
-            end;
+               if ( lstEngines[i].ClickSprites)
+                then lstSpriteClicked.Add(spr); //<-- spr.MouseDown può disabilitare spriteclick
           end;
         end;
-
       end;
+
     end;
+  end;
 
 
-    if Assigned( FOnSpritemousedown ) and (lstSpriteClicked.Count > 0)  then
-      FOnSpritemousedown( self, lstSpriteClicked , Button, Shift );
+  if Assigned( FOnSpritemousedown ) and (lstSpriteClicked.Count > 0)  then
+    FOnSpritemousedown( self, lstSpriteClicked , Button, Shift );
 
   // cells
   if Assigned( FOnCellMouseDown ) then begin
@@ -3739,7 +3750,7 @@ begin
   if not lstSpritesHandled then goto noSprites; // se la precedente list non è ancora stata gestita
     lstSpriteMoved.Clear ;
 
-    for i := lstEngines.Count - 1 downTo 0 Do  begin
+    for i := 0 To lstEngines.Count - 1 Do  begin   // da 0 in su per la priority. precedenza a priority più alta. downto solo nel render
       if not lstEngines[i].visible then
         Continue;
       if lstEngines[i].RenderBitmap = VisibleRender then begin
@@ -3750,7 +3761,7 @@ begin
       begin    // ogni volta devo ribadire
         pt := Point( XVisibleToVirtual(x), YVisibleToVirtual(y) );
       end;
-      for s := lstEngines[i].lstSprites.Count - 1 downto 0 do begin
+      for s := 0 to lstEngines[i].lstSprites.Count - 1 do begin  // da 0 in su per la priority. precedenza a priority più alta. downto solo nel render
         spr := lstEngines[i].Sprites[s];
         if (spr.Visible) or (  not (spr.Visible) and (lstEngines[i].HiddenSpritesMouseMove) ) then  begin
           if spr.DrawingRect.Contains ( pt ) then begin
@@ -3837,7 +3848,7 @@ begin
   if Assigned( FOnMouseUp ) then   FOnMouseUp( self, Button, Shift, X, Y );
 
   lstSpriteClicked.Clear ;
-    for i := lstEngines.Count - 1 downTo 0 Do begin
+    for i := 0 To lstEngines.Count - 1 Do begin  // da 0 in su per la priority. precedenza a priority più alta. downto solo nel render
       if (not lstEngines[i].ClickSprites) or ( not lstengines[i].Visible) then   Continue;
       if lstEngines[i].RenderBitmap = VisibleRender then begin
         pt.X:=X; // rimetto gli originali X Y
@@ -3847,7 +3858,7 @@ begin
       begin    // ogni volta devo ribadire
         pt := Point( XVisibleToVirtual(x), YVisibleToVirtual(y) );
       end;
-      for s := lstEngines[i].lstSprites.Count - 1 downto 0 do begin
+      for s := 0 to lstEngines[i].lstSprites.Count - 1 do begin // da 0 in su per la priority. precedenza a priority più alta. downto solo nel render
         spr := lstEngines[i].Sprites[s];
         if spr.Visible then begin
           if spr.DrawingRect.Contains ( pt ) then begin
