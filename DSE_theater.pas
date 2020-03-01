@@ -1837,6 +1837,7 @@ var
 begin
 
 (* Ordinamento Sprites in base a priority *)
+
   if IsoPriority then begin
 
     for I := lstSprites.Count - 1 downto 0 do  begin
@@ -2316,7 +2317,7 @@ var
 begin
   if LifeSpan > 0 then begin
     LifeSpan := LifeSpan - interval;
-    if LifeSpan = 0 then  begin
+    if LifeSpan <= 0 then  begin
       Dead := true;
       Exit;
     end;
@@ -3558,7 +3559,7 @@ begin
     // render su VisibleBitmap degli engines
     for i := lstEngines.Count - 1 downto 0 do begin
       if lstEngines.items[i].RenderBitmap = VisibleRender then begin
-        lstEngines.items[i].ProcessSprites(GetTickCount - Interval  );
+        lstEngines.items[i].ProcessSprites( Interval  );
         lstEngines.items[i].RenderSprites;
       end;
     end;
