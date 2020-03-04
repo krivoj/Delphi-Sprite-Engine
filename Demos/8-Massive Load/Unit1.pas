@@ -329,13 +329,13 @@ begin
    for I := 0 to 9 do begin
      Sprite:= SE_Characters.FindSprite('gabriel' + IntToStr(i));
      Sprite.labels.Clear ;
-     SpriteLabel := SE_SpriteLabel.create(0,64,'Verdana',clYellow,clBlack,'Gabriel',pmCopy,True);
+     SpriteLabel := SE_SpriteLabel.create(0,64,'Verdana',clYellow,clBlack,8,'Gabriel',True);
      Sprite.Labels.Add(SpriteLabel);
    end;
    for I := 0 to 9 do begin
      Sprite:= SE_Characters.FindSprite('shahira' + IntToStr(i));
      Sprite.labels.Clear ;
-     SpriteLabel := SE_SpriteLabel.create(0,64,'Verdana',clYellow,clBlack,'Shahira',pmCopy,True);
+     SpriteLabel := SE_SpriteLabel.create(0,64,'Verdana',clYellow,clBlack,8,'Shahira',True);
      Sprite.Labels.Add(SpriteLabel);
    end;
 

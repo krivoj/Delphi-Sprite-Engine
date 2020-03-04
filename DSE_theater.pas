@@ -455,7 +455,7 @@ type
     procedure CollisionDetection;
 
     procedure Notification( AComponent: TComponent; Operation: TOperation ); override;
-    procedure RenderSprites;
+    procedure RenderSprites( interval: Integer);
   public
 
     FTheater: SE_Theater;
@@ -620,8 +620,8 @@ type
 //    procedure MouseMove ( x,y: integer; Shift: TShiftState; var handled: boolean); virtual;
 
     procedure Move(interval: Integer); virtual;
-    procedure SetCurrentFrame; virtual;
-    procedure DrawFrame; virtual;
+    procedure SetCurrentFrame( interval: Integer); virtual;
+    procedure DrawFrame( interval: Integer); virtual;
     procedure Render(RenderTo: TRenderBitmap);  virtual;
 
     procedure SetPositionCell(const Value: TPoint);
@@ -1173,7 +1173,7 @@ begin
       if lstEngines.items[i].RenderBitmap = VirtualRender then begin
 //        lstEngines.items[i].ProcessSprites(GetTickCount - SE_ThreadTimer(Sender).Interval  );
         lstEngines.items[i].ProcessSprites( SE_ThreadTimer(Sender).Interval  );
-        lstEngines.items[i].RenderSprites;
+        lstEngines.items[i].RenderSprites (SE_ThreadTimer(Sender).Interval);
         iCollisionDelay := iCollisionDelay -  SE_ThreadTimer(Sender).Interval ;
         if iCollisionDelay <= 0 then begin
           iCollisionDelay := fCollisionDelay;
@@ -1950,7 +1950,7 @@ begin
   end;
 end;
 
-procedure SE_Engine.RenderSprites;
+procedure SE_Engine.RenderSprites( interval: Integer);
 var
   i: integer;
 begin
@@ -1958,7 +1958,7 @@ begin
 //  if (Theater <> nil) and (lstSprites.Count > 0) then
   if (FVisible) and (Theater <> nil) then begin
     for i := lstSprites.Count - 1 downto 0 do  begin
-      lstSprites[i].SetCurrentFrame ;
+      lstSprites[i].SetCurrentFrame( interval ) ;
      // application.ProcessMessages ;
       if lstSprites[i].Visible then lstSprites[i].Render ( FRenderBitmap );
      // application.ProcessMessages ;
@@ -2672,7 +2672,7 @@ begin
 
 end;
 
-procedure SE_Sprite.SetCurrentFrame;
+procedure SE_Sprite.SetCurrentFrame ( interval: Integer);
 begin
   if fchangingBitmap then Exit;
   fchangingFrame:= True;
@@ -2682,7 +2682,7 @@ begin
       if fTheater.fUpdating or Pause = true then exit;
     //  if Guid='shahira' then asm int 3 end;
 
-      Inc( fDelay );
+      fDelay := fdelay + interval;
       if fDelay >= AnimationInterval then  begin
         fDelay := 0;
 
@@ -2736,7 +2736,7 @@ begin
   end;
 
 
-  DrawFrame;
+  DrawFrame( interval);
   fchangingFrame:= false;
 
 end;
@@ -3560,7 +3560,7 @@ begin
     for i := lstEngines.Count - 1 downto 0 do begin
       if lstEngines.items[i].RenderBitmap = VisibleRender then begin
         lstEngines.items[i].ProcessSprites( Interval  );
-        lstEngines.items[i].RenderSprites;
+        lstEngines.items[i].RenderSprites( Interval  );
       end;
     end;
 
