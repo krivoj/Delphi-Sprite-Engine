@@ -463,6 +463,8 @@ type
     destructor Destroy; override;
 
     function IsAnySpriteMoving : Boolean;
+    function IsAnySpriteVisible : Boolean;
+
     procedure ProcessSprites(interval: Integer);
     function CreateSprite( const FileName,Guid: string; nFramesX, nFramesY, nDelay, posX, posY: integer; const Transparent: boolean ): SE_Sprite;overload;
     function CreateSprite(const bmp: TBitmap; const Guid: string; nFramesX, nFramesY, nDelay, posX, posY: integer; const Transparent: boolean  ): SE_Sprite; overload;
@@ -1788,6 +1790,18 @@ begin
   end;
 
 end;
+Function SE_Engine.IsAnySpriteVisible :Boolean;
+var
+  i: integer;
+begin
+  Result := False;
+  for i:= 0 to lstSprites.Count -1 do begin
+    if lstSprites [i].visible then begin
+      Result := true;
+      Exit;
+    end;
+  end;
+end;
 
 Function SE_Engine.FindSprite (Guid: string):SE_sprite;
 var
@@ -2680,7 +2694,8 @@ begin
   if FAnimated then begin
 
       if fTheater.fUpdating or Pause = true then exit;
-    //  if Guid='shahira' then asm int 3 end;
+    //  if (Guid='ball') and (FFrameXMax = 5) then asm int 3 end;
+
 
       fDelay := fdelay + interval;
       if fDelay >= AnimationInterval then  begin
