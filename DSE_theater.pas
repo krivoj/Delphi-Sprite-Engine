@@ -19,12 +19,15 @@ type
   TCollisionEvent = procedure( Sender: TObject; Sprite1, Sprite2: SE_Sprite ) of object;
 
   SE_EngineEvent = procedure(  ASprite: SE_Sprite ) of object;
+  SE_EngineEventPartialMove = procedure(  ASprite: SE_Sprite; Partial: byte ) of object;
 
   SE_GridMouseEvent = procedure( Sender: TObject;  Button: TMouseButton; Shift: TShiftState; CellX, CellY: integer) of object;
   SE_GridMouseMoveEvent = procedure( Sender: TObject; Shift: TShiftState; CellX, CellY: integer ) of object;
 
   SE_SpriteEvent = procedure( Sender: TObject; ASprite: SE_Sprite ) of object;
   SE_SpriteEventDstReached = procedure of object;
+ // SE_SpriteEventPartialMove = procedure(  Sender: TObject; ASprite: SE_Sprite; Partial: byte ) of object;
+  SE_SpriteEventPartialMove = procedure of object;
 
   SE_SpriteMouseEvent = procedure( Sender: TObject; lstSprite: TObjectList<SE_Sprite>; Button: TMouseButton; Shift: TShiftState  ) of object;
   SE_SpriteMouseMoveEvent = procedure( Sender: TObject; lstSprite: TObjectList<SE_Sprite>; Shift: TShiftState; var Handled: boolean) of object;
@@ -363,6 +366,11 @@ type
 
   SE_SpriteMoverData = class( TObject )
   private
+    fStartX,fStartY: Integer;
+    lstPartial : TStringList;
+    FPartialList : String;
+    Partial: Byte;
+
     FDestinationY: integer;
     FDestinationX: integer;
 
@@ -382,6 +390,7 @@ type
     function GetDestination(  ): TPoint;
     procedure SetDestination(  Destination: TPoint );
     procedure SetReachPerc(  perc: integer );
+    procedure SetPartialList(  PartialCommaText: string );
     procedure setWPinterval ( v: Integer );
     function GetDestinationCell(  ): TPoint;
     procedure SetDestinationCell(  DestinationCell: TPoint );
@@ -390,6 +399,7 @@ type
   public
     FSprite: SE_Sprite;
 
+    TotalStep: Integer;
     curWP: Integer;
     TWPinterval: Integer;   // ms tra un movepathpoint e l'altro
     MovePath: TList<TPoint>;
@@ -404,6 +414,7 @@ type
 
     property Destinationreach: Tpoint read FDestinationReach write FDestinationReach;
     property ReachPerc: Integer read freachPerc write SetReachPerc;
+    property PartialList: string read fPartialList write SetPartialList;
 
 
 
@@ -427,6 +438,7 @@ type
     FOnCollision: TCollisionEvent;
     FOnSpriteDestinationReached: SE_EngineEvent;
     FOnSpriteDestinationReachedPerc: SE_EngineEvent;
+    FOnSpritePartialMove: SE_EngineEventPartialMove;
 
     FPixelClick: Boolean;
     FPixelCollision: Boolean;
@@ -446,6 +458,7 @@ type
     procedure SetPriority(const Value: integer);
     procedure SetOnCollision(const Value: TCollisionEvent);
     procedure SetOnSpriteDestinationReached(const Value: SE_EngineEvent);
+    procedure SetOnSpritePartialMove (const Value: SE_EngineEventPartialMove);
 
     procedure SetVisible(const Value: boolean);
   protected
@@ -477,6 +490,7 @@ type
     procedure RemoveAllSprites; overload;
     procedure RemoveAllSprites ( Name:string ); overload;
     procedure HideAllSprites; overload;
+    procedure ShowAllSprites;
     procedure HideAllSprites ( Name:string ); overload;
     procedure RemoveSprite( ASprite: SE_Sprite );
     property SpriteCount: integer read GetSpriteCount;
@@ -498,12 +512,15 @@ type
     property OnCollision: TCollisionEvent read FOnCollision write SetOnCollision;
     property OnSpriteDestinationReached: SE_EngineEvent read FOnSpriteDestinationReached write FOnSpriteDestinationReached;
     property OnSpriteDestinationReachedPerc: SE_EngineEvent read FOnSpriteDestinationReachedPerc write FOnSpriteDestinationReachedPerc;
-//    property OnSpriteMoving: SE_EngineEvent read FOnSpriteMoving write FOnSpriteMoving;
+    property OnSpritePartialMove : SE_EngineEventPartialMove read FOnSpritePartialMove write FOnSpritePartialMove;
+
+    //    property OnSpriteMoving: SE_EngineEvent read FOnSpriteMoving write FOnSpriteMoving;
   end;
 
 
   SE_Sprite = class( TObject )
   private
+
     ProgressBar : Boolean;
     FBMP, FBMPalpha: SE_Bitmap;
     FBMPCurrentFrame,FBMPCurrentFrameAlpha: SE_Bitmap;
@@ -550,7 +567,6 @@ type
     FNotifyDestinationReached : boolean;
     FNotifyDestinationReachedPerc: boolean;
 
-
     FDead: boolean;
     FLifeSpan: integer; // utile per distanza in pixel
     fDelay: integer;
@@ -572,6 +588,7 @@ type
 
     FOnDestinationReached: SE_SpriteEventDstReached;
     FOnDestinationReachedPerc: SE_SpriteEventDstReached;
+    FOnPartialMoveReached:  SE_SpriteEventPartialMove;
 
     function getTransparentColor: TRGB;
     procedure SetPositionX(const Value: single);
@@ -598,11 +615,13 @@ type
   protected
 
   public
+
     Guid: string;
     SpriteFileName : string;
     useBmpDimension: Boolean;
     DestinationReached : boolean;
     DestinationReachedPerc : boolean;
+
     sTag : string;
     CollisionIgnore: Boolean;
     MouseX, MouseY : integer; // coordinate del mouse attuali su questo SE_Sprite
@@ -615,6 +634,7 @@ type
     destructor Destroy; override;
     procedure iOnDestinationReached ; virtual;
     procedure iOnDestinationReachedPerc ; virtual;
+    procedure iOnPartialMoveReached ; virtual;
 
 
 //    procedure MouseUp ( x,y: integer; Button: TMouseButton; Shift: TShiftState; var handled: boolean); virtual;
@@ -702,6 +722,7 @@ type
 
     property OnDestinationreached : SE_SpriteEventDstReached read FOnDestinationreached write FOnDestinationreached;
     property OnDestinationreachedPer : SE_SpriteEventDstReached read FOnDestinationreachedPerc write FOnDestinationreachedPerc;
+    property OnPartialMoveReached : SE_SpriteEventPartialMove read FOnPartialMoveReached write FOnPartialMoveReached;
 
 
   end;
@@ -753,6 +774,8 @@ begin
 
 end;
 
+var
+  MutexMove: cardinal;
 
 {$R-}
 // ----------------------------------------------------------------------------
@@ -1028,10 +1051,15 @@ begin
 end;
 procedure SE_SpriteMoverData.SetDestination(Destination: TPoint);
 begin
+  WaitForSingleObject( MutexMove, INFINITE );
   FreachPerc := 0;
+  lstPartial.Clear;
   fDestinationX := Destination.X;
   fDestinationY := Destination.Y;
+  fStartX := FSprite.Position.X;
+  fStartY := FSprite.Position.Y;
   CalculateVectors;
+  ReleaseMutex(MutexMove);
 end;
 procedure SE_SpriteMoverData.setWPinterval ( v: Integer );
 begin
@@ -1052,6 +1080,42 @@ begin
   fDestinationYReach :=  aPath[x].Y;
   aPath.Free;
   CalculateVectors;
+
+end;
+procedure SE_SpriteMoverData.SetPartialList(  PartialCommaText: string );
+var
+  aPath: dse_pathplanner.TPath;
+  ts : TStringList;
+  tsInteger : TList<Integer>;
+  i, aValue: Integer;
+begin
+  WaitForSingleObject( MutexMove, INFINITE );
+  aPath:= dse_pathplanner.TPath.Create;
+  GetLinePoints( FSprite.Position.X,  FSprite.Position.Y, fDestinationX, fDestinationY, aPath) ;
+  TotalStep := aPath.Count;
+  ts := TStringList.Create;
+  ts.CommaText := PartialCommaText;
+
+  tsInteger := TList<Integer>.Create;
+  for I := 0 to ts.Count -1 do begin
+    aValue := StrToInt(ts[i]);
+    tsInteger.Add(aValue);
+  end;
+
+  tsInteger.sort(TComparer<Integer>.Construct(
+  function (const L, R: Integer): integer
+  begin
+    Result := R - L;
+  end
+ ));
+
+  for I := 0 to tsInteger.Count -1 do begin
+    lstPartial.Add( IntToStr(tsInteger[i]) );
+  end;
+
+  tsInteger.Free;
+  aPath.Free;
+  ReleaseMutex(MutexMove);
 
 end;
 
@@ -1076,11 +1140,13 @@ end;
 constructor SE_SpriteMoverData.create ;
 begin
   MovePath:= TList<TPoint>.Create ;
+  lstPartial:= TStringList.Create;
   curWP := 0;
 end;
 destructor SE_SpriteMoverData.Destroy ;
 begin
   MovePath.Free;
+  lstPartial.Free;
 end;
 
 procedure SE_SpriteMoverData.CalculateVectors;
@@ -1963,6 +2029,14 @@ begin
     if ContainsText ( Sprites[i].Guid, Name ) then  Sprites[i].Visible := False;
   end;
 end;
+procedure SE_Engine.ShowAllSprites;
+var
+  i: integer;
+begin
+  for i := lstSprites.Count - 1 downto 0 do begin
+    lstSprites[i].Visible := true;
+  end;
+end;
 
 procedure SE_Engine.RenderSprites( interval: Integer);
 var
@@ -1992,6 +2066,11 @@ procedure SE_Engine.SetOnSpriteDestinationReached(const Value: SE_EngineEvent);
 begin
   FOnSpriteDestinationReached := Value;
 end;
+procedure SE_Engine.SetOnSpritePartialMove (const Value: SE_EngineEventPartialMove);
+begin
+  FOnSpritePartialMove := Value;
+end;
+
 procedure SE_Engine.SetPriority(const Value: integer);
 begin
 
@@ -2031,6 +2110,7 @@ rectSource: TRect;
 begin
   inherited create;
   Destinationreached := true;
+
 
   FAnimated := ( nFramesX > 1 ) ;//or ( FramesY > 1 );
   Self.guid:= Guid;
@@ -2084,6 +2164,7 @@ begin
 
   FOnDestinationReached := iOnDestinationReached ;
   FOnDestinationReachedPerc := iOnDestinationReachedPerc ;
+  FOnPartialMoveReached := iOnPartialMoveReached ;
 
 
   Transparent := TransparentSprite;
@@ -2121,7 +2202,9 @@ begin
   FBMPCurrentFramealpha :=  SE_Bitmap.Create(FBMPCurrentFrame.Width,FBMPCurrentFrame.Height);   // crea un bmp alpha comunque
 
 
-  FrameX := 0;
+  if FrameX > (FFrameXMax-1) then // lo resetta solo c'è un frame in più
+    FrameX := 0;
+//  FrameX := 0;
   FrameY := 0;
 
   //glielo devo passare già tagliato e poi andrà bene
@@ -2150,6 +2233,7 @@ rectSource: TRect;
 begin
   inherited create;
   Destinationreached := true;
+
   FAnimated := ( nFramesX > 1 ) ;//or ( FramesY > 1 );
   Self.Guid:= Guid;
   SpriteFileName:= 'TBitmap';
@@ -2200,6 +2284,7 @@ begin
 
   FOnDestinationReached := iOnDestinationReached ;
   FOnDestinationReachedPerc := iOnDestinationReachedPerc ;
+  FOnPartialMoveReached := iOnPartialMoveReached ;
 
 
   Transparent := TransparentSprite;
@@ -2236,7 +2321,8 @@ begin
   FBMPCurrentFramealpha :=  SE_Bitmap.Create(FBMPCurrentFrame.Width,FBMPCurrentFrame.Height);   // crea un bmp alpha comunque
 
 
-  FrameX := 0;
+  if FrameX > (FFrameXMax-1) then // lo resetta solo c'è un frame in più
+    FrameX := 0;
   FrameY := 0;
 
   //glielo devo passare già tagliato e poi andrà bene
@@ -2283,7 +2369,7 @@ begin
   // internamente reached
   Destinationreached := true;
   if Theater.Grid <> gsNone then begin
-
+    FMoverData.lstPartial.Clear;
     theater.UnMap( SE_Sprite(Self).Position.x  , SE_Sprite(Self).Position.Y, X,Y);
 
     fPositionCell.x:= Trunc(X ) ;
@@ -2304,6 +2390,10 @@ begin
       FNotifyDestinationReachedPerc:= false;
       if Assigned(FEngine.FOnSpriteDestinationReachedPerc) then FEngine.FOnSpriteDestinationReachedPerc(Self);
     end;
+end;
+procedure SE_Sprite.iOnPartialMoveReached;
+begin
+  if Assigned(FEngine.FOnSpritePartialMove ) then FEngine.FOnSpritePartialMove(Self, MoverData.Partial );
 end;
 
 function SE_Sprite.GetPosition: TPoint;
@@ -2326,6 +2416,7 @@ procedure SE_Sprite.Move(interval: integer);
 var
   temp: single;
   oldx, oldy: single;
+  i,Dist,Dist2 : Integer;
   label endMove;
 
 begin
@@ -2423,10 +2514,6 @@ begin
     else
       PositionY := PositionY + FMoverData.SpeedY;
 
-//    if Guid = 'ball' then
-//    OutputDebugString(PChar('ball ' +  FloatToStr(PositionX) + '  ' +  FloatToStr(PositionY) +'  ' +  FloatToStr(FMoverData.Speed)));
-//     if NotifyMoving then
-//       if Assigned(engine.FOnSpriteMoving ) then engine.FOnSpriteMoving ( self  );
 
     if Assigned( FOnDestinationReached ) then
       if ( PositionX <> oldx ) or ( PositionY <> oldY ) then
@@ -2442,6 +2529,21 @@ begin
       end;
 
     end;
+
+    WaitForSingleObject( MutexMove, INFINITE );
+    if FMoverData.lstPartial.Count > 0 then begin
+      dist := AbsDistance( FMoverData.fStartX, FMoverData.fStartY,Position.X,Position.Y);  // quanti pixel ho percorso
+      for I := FMoverData.lstPartial.Count -1 downto 0 do begin
+        dist2 := FMoverData.TotalStep *  StrToInt(FMoverData.lstPartial[i]) div 100;       // quanti pixel devo fare per la prossima percentuale
+        if dist >= dist2  then begin
+          FMoverData.Partial := StrToInt(FMoverData.lstPartial[i]);
+          FMoverData.lstPartial.Delete(I);
+          if Assigned(FOnPartialMoveReached) then FOnPartialMoveReached(   );
+        end;
+      end;
+    end;
+    ReleaseMutex(MutexMove);
+
 
     if ( PositionX = FMoverData.fDestinationX ) and ( PositionY = FMoverData.fDestinationY ) then begin
   //          if Not NotifyDestinationReached then Exit;
@@ -3047,6 +3149,7 @@ begin
 
   FOnDestinationReached := iOnDestinationReached ;
   FOnDestinationReachedPerc := iOnDestinationReachedPerc ;
+  FOnPartialMoveReached := iOnPartialMoveReached ;
 
 
   Transparent := aTransparent;
@@ -3990,7 +4093,10 @@ begin
 
 end;
 
-
+initialization
+  MutexMove:=CreateMutex(nil,false,'move');
+finalization
+  CloseHandle(MutexMove)
 
 
 end.

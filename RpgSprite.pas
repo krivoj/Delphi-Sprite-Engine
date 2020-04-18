@@ -68,7 +68,7 @@ type
     procedure OverWriteBitmap( );
     procedure iOnDestinationReached ; override;
     procedure Render ( RenderTo: TRenderBitmap); override;
-    procedure SetCurrentFrame; override;
+    procedure SetCurrentFrame( interval: Integer); override;
 
   end;
 
@@ -141,7 +141,7 @@ type
     property Isodirection: string read fIsoDirection write SetIsoDirection;
     procedure OverWriteBitmap( );
     procedure iOnDestinationReached ; override;
-    procedure SetCurrentFrame ; override;
+    procedure SetCurrentFrame( interval: Integer) ; override;
     procedure Render ( RenderTo: TRenderBitmap) ; override;
 
 
@@ -769,7 +769,7 @@ begin
   fIsoDirection := value;
   overwriteBitmap;
 end;
-procedure TSpellSprite.SetCurrentFrame() ;
+procedure TSpellSprite.SetCurrentFrame( interval: Integer);
 begin
   // internamente Cambio da casting a moving. Il setCurrentFrame di se_Sprite lo ha settato visible = false
   // A questo punto annullo il not visible e carico/creo in overwriteBitmap moving.bmp.
