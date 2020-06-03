@@ -241,7 +241,6 @@ end;
 procedure TForm1.Button2Click(Sender: TObject);
 var
   SpriteGabriel, SpriteShahira: SE_Sprite;
-  SpriteBuff : SE_SubSprite;
 begin
 
    SpriteGabriel:= SE_Characters.FindSprite('gabriel');
@@ -249,17 +248,14 @@ begin
 
    SpriteGabriel.SubSprites.Clear ;
 
-   SpriteBuff := SE_SubSprite.create('..\!media\buff1.bmp','buff1',32,0,True,true);
-   SpriteGabriel.SubSprites.Add(Spritebuff);
-   SpriteBuff := SE_SubSprite.create('..\!media\buff2.bmp','buff2',50,0,True,true);
-   SpriteGabriel.SubSprites.Add(Spritebuff);
+   SpriteGabriel.AddSubSprite( '..\!media\buff1.bmp','buff1',32,0,true);
+   SpriteGabriel.AddSubSprite('..\!media\buff2.bmp','buff2',50,0,true);
 
    SpriteShahira.SubSprites.Clear ;
 
-   SpriteBuff := SE_SubSprite.create('..\!media\buff3.bmp','buff1',32,0,True,true);
-   SpriteShahira.SubSprites.Add(Spritebuff);
-   SpriteBuff := SE_SubSprite.create('..\!media\buff4.bmp','buff2',50,0,True,true);
-   SpriteShahira.SubSprites.Add(Spritebuff);
+   SpriteShahira.AddSubSprite( '..\!media\buff3.bmp','buff1',32,0,true);
+   SpriteShahira.AddSubSprite('..\!media\buff4.bmp','buff2',50,0,true);
+
 
 end;
 

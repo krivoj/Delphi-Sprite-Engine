@@ -631,6 +631,7 @@ type
     procedure ChangeBitmap ( const FileName: string; const nFramesX, nFramesY, nDelay: integer);overload; virtual;
     procedure ChangeBitmap ( const  bmp: Tbitmap;  const nFramesX, nFramesY, nDelay: integer);overload; virtual;
 
+
     destructor Destroy; override;
     procedure iOnDestinationReached ; virtual;
     procedure iOnDestinationReachedPerc ; virtual;
@@ -650,7 +651,9 @@ type
     procedure MakeDelay(msecs: integer);
 
     function FindSubSprite ( Guid : string): SE_SubSprite;
-    procedure AddSubSprite ( aSubSprite : SE_SubSprite);
+    procedure AddSubSprite ( const FileName, Guid: string; posX, posY: integer; const TransparentSprite: boolean);overload; virtual;
+    procedure AddSubSprite ( const bmp: SE_Bitmap; Guid: string; posX, posY: integer; const TransparentSprite: boolean);overload; virtual;
+
     procedure DeleteSubSprite ( Guid : string);
     procedure RemoveAllSubSprites;
     function  CollisionDetect ( aSprite: SE_sprite ): Boolean;
@@ -2357,8 +2360,8 @@ begin
   FMoverData.free;
 
   lstLabels.Free;
-  RemoveAllSubSprites;
-  lstSubSprites.Free;
+//  RemoveAllSubSprites;
+ // lstSubSprites.Free;
   inherited Destroy;
 end;
 
@@ -2606,10 +2609,22 @@ begin
     end;
   end;
 end;
-procedure SE_Sprite.AddSubSprite ( aSubSprite : SE_SubSprite);
+procedure SE_Sprite.AddSubSprite ( const FileName, Guid: string; posX, posY: integer; const TransparentSprite: boolean);
+var
+  aSubSprite : SE_SubSprite;
 begin
+  aSubSprite := SE_SubSprite.create( FileName, Guid, PosX, PosY, True,TransparentSprite );
   lstSubSprites.Add( aSubSprite );
 end;
+
+procedure SE_Sprite.AddSubSprite ( const bmp: SE_Bitmap; Guid: string; posX, posY: integer; const TransparentSprite: boolean);
+var
+  aSubSprite : SE_SubSprite;
+begin
+  aSubSprite := SE_SubSprite.create( bmp, Guid, PosX, PosY, True,TransparentSprite );
+  lstSubSprites.Add( aSubSprite );
+end;
+
 procedure SE_Sprite.RemoveAllSubSprites ;
 var
   i: Integer;
