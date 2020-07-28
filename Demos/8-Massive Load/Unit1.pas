@@ -76,7 +76,7 @@ begin
   SE_Characters.Priority := 1;
 
 
-  Background:= SE_Background.CreateSprite('..\!media\back1.bmp','background',{framesX}1,{framesY}1,{Delay}0,{X}0,{Y}0,{transparent}false);
+  Background:= SE_Background.CreateSprite('..\!media\back1.bmp','background',{framesX}1,{framesY}1,{Delay}0,{X}0,{Y}0,{transparent}false,0);
   Background.Position := Point( Background.FrameWidth div 2 , Background.FrameHeight div 2 );
 
   SE_Theater1.Active := True;
@@ -84,14 +84,14 @@ begin
 
   for i := 0 to 9 do begin
     SE_Characters.CreateSprite('..\!media\gabriel_WALK.bmp' ,'gabriel'+ IntToStr(i),{framesX}15,{framesY}6,{Delay}7,
-    {X}randomrange(100,900),{Y}randomrange(100,500),{transparent}true);
+    {X}randomrange(100,900),{Y}randomrange(100,500),{transparent}true,1);
   end;
   for i := 0 to 9 do begin
     SE_Characters.CreateSprite('..\!media\shahira_WALK.bmp' ,'shahira'+ IntToStr(i),{framesX}15,{framesY}6,{Delay}7,
-    {X}randomrange(100,900),{Y}randomrange(100,500),{transparent}true);
+    {X}randomrange(100,900),{Y}randomrange(100,500),{transparent}true,1);
   end;
 
-  SpriteTree := SE_Characters.CreateSprite('..\!media\tree.bmp','tree',{framesX}2,{framesY}1,{Delay}5,{X}250,{Y}250,{transparent}true);
+  SpriteTree := SE_Characters.CreateSprite('..\!media\tree.bmp','tree',{framesX}2,{framesY}1,{Delay}5,{X}250,{Y}250,{transparent}true,1);
   SpriteTree.ModPriority := 170;
   SpriteTree.CollisionIgnore := True;
 

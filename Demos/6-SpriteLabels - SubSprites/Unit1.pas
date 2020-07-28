@@ -68,7 +68,7 @@ begin
   SE_Characters.Priority := 1;
 
 
-  Background:= SE_Background.CreateSprite('..\!media\back1.bmp','background',{framesX}1,{framesY}1,{Delay}0,{X}0,{Y}0,{transparent}false);
+  Background:= SE_Background.CreateSprite('..\!media\back1.bmp','background',{framesX}1,{framesY}1,{Delay}0,{X}0,{Y}0,{transparent}false,0);
   Background.Position := Point( Background.FrameWidth div 2 , Background.FrameHeight div 2 );
 
   SE_Theater1.Active := True;
@@ -76,12 +76,12 @@ begin
   gabriel :=  SE_BITMAP.Create ( '..\!media\gabriel_WALK.bmp');
   shahira :=  SE_BITMAP.Create ( '..\!media\shahira_WALK.bmp');
 
-  SE_Characters.CreateSprite(gabriel.Bitmap ,'gabriel',{framesX}15,{framesY}6,{Delay}7,{X}100,{Y}100,{transparent}true);
-  SE_Characters.CreateSprite(shahira.Bitmap,'shahira',{framesX}15,{framesY}6,{Delay}7,{X}500,{Y}100,{transparent}true);
+  SE_Characters.CreateSprite(gabriel.Bitmap ,'gabriel',{framesX}15,{framesY}6,{Delay}7,{X}100,{Y}100,{transparent}true,1);
+  SE_Characters.CreateSprite(shahira.Bitmap,'shahira',{framesX}15,{framesY}6,{Delay}7,{X}500,{Y}100,{transparent}true,1);
   gabriel.Free;
   shahira.Free;
 
-  SpriteTree := SE_Characters.CreateSprite('..\!media\tree.bmp','tree',{framesX}2,{framesY}1,{Delay}5,{X}250,{Y}250,{transparent}true);
+  SpriteTree := SE_Characters.CreateSprite('..\!media\tree.bmp','tree',{framesX}2,{framesY}1,{Delay}5,{X}250,{Y}250,{transparent}true,1);
   SpriteTree.ModPriority := 170;
 
   Randomize;

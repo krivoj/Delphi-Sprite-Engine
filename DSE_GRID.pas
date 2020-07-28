@@ -241,12 +241,11 @@ begin
     bmp.Canvas.Brush.Color := aCell.BackColor;
     bmp.FillRect(0,0,bmp.Width,bmp.Height,ACell.BackColor);
 
+    inc (IncPriority);
     aCell.Sprite := CellsEngine.CreateSprite(bmp.bitmap, IntToStr(aCell.Col) +':'+IntToStr(aCell.Row),1,1,1000,
-                                                   bmp.Width div 2,bmp.Height div 2,false);
+                                                   bmp.Width div 2,bmp.Height div 2,false,IncPriority);
     bmp.Free;
 
-    inc (IncPriority);
-    aCell.Sprite.Priority := IncPriority;
     fCells.Add(aCell);
   end;
 end;
@@ -349,11 +348,10 @@ begin
     bmp.Canvas.Brush.Color := aCell.BackColor;
     bmp.FillRect(0,0,bmp.Width,bmp.Height,ACell.BackColor);
 
-    aCell.Sprite := CellsEngine.CreateSprite(bmp.bitmap, IntToStr(aCell.Col) +':'+IntToStr(aCell.Row),1,1,1000,
-                                                  TotCellWidth+bmp.Width div 2,TotCellHeight + bmp.Height div 2,false);
-    bmp.Free;
     inc (IncPriority);
-    aCell.Sprite.Priority := IncPriority;
+    aCell.Sprite := CellsEngine.CreateSprite(bmp.bitmap, IntToStr(aCell.Col) +':'+IntToStr(aCell.Row),1,1,1000,
+                                                  TotCellWidth+bmp.Width div 2,TotCellHeight + bmp.Height div 2,false,IncPriority);
+    bmp.Free;
     fCells.Add(aCell);
     Inc (C);
   end;
@@ -433,11 +431,10 @@ begin
     bmp.Canvas.Brush.Color := aCell.BackColor;
     bmp.FillRect(0,0,bmp.Width,bmp.Height,ACell.BackColor);
 
-    aCell.Sprite := CellsEngine.CreateSprite(bmp.bitmap, IntToStr(aCell.Col) +':'+IntToStr(aCell.Row),1,1,1000,
-                                                  TotCellWidth+bmp.Width div 2,TotCellHeight + bmp.Height div 2,false);
-    bmp.Free;
     inc (IncPriority);
-    aCell.Sprite.Priority := IncPriority;
+    aCell.Sprite := CellsEngine.CreateSprite(bmp.bitmap, IntToStr(aCell.Col) +':'+IntToStr(aCell.Row),1,1,1000,
+                                                  TotCellWidth+bmp.Width div 2,TotCellHeight + bmp.Height div 2,false,IncPriority);
+    bmp.Free;
     fCells.Add(aCell);
     Inc (R);
   end;
@@ -816,8 +813,7 @@ begin
       bmp.Bitmap.Canvas.FillRect( Rect( 0,0, ScrollBarWidth, ScrollBarHeight ));
 
       Width := Width + ScrollBarWidth;
-      aScrollBar := ScrollBarsEngine.CreateSprite( bmp.Bitmap, Self.Name + '.vertical',1,1,1000, Self.Width - (ScrollBarWidth div 2 ) , ScrollBarHeight div 2   , false );
-      aScrollBar.Priority := MaxInt;
+      aScrollBar := ScrollBarsEngine.CreateSprite( bmp.Bitmap, Self.Name + '.vertical',1,1,1000, Self.Width - (ScrollBarWidth div 2 ) , ScrollBarHeight div 2   , false,MaxInt );
       bmp.Free;
 
       MouseScroll := False;

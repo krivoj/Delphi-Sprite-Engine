@@ -64,16 +64,16 @@ begin
   SE_Characters.Priority := 1;
 
 
-  Background:= SE_Background.CreateSprite('..\!media\back1.bmp','background',{framesX}1,{framesY}1,{Delay}0,{X}0,{Y}0,{transparent}false);
+  Background:= SE_Background.CreateSprite('..\!media\back1.bmp','background',{framesX}1,{framesY}1,{Delay}0,{X}0,{Y}0,{transparent}false,0);
   Background.Position := Point( Background.FrameWidth div 2 , Background.FrameHeight div 2 );
 
   SE_Theater1.Active := True;
 
 
-  SE_Characters.CreateSprite('..\!media\gabriel_WALK.bmp' ,'gabriel',{framesX}15,{framesY}6,{Delay}7,{X}100,{Y}100,{transparent}true);
-  SE_Characters.CreateSprite('..\!media\shahira_WALK.bmp','shahira',{framesX}15,{framesY}6,{Delay}7,{X}500,{Y}100,{transparent}true);
+  SE_Characters.CreateSprite('..\!media\gabriel_WALK.bmp' ,'gabriel',{framesX}15,{framesY}6,{Delay}7,{X}100,{Y}100,{transparent}true,1);
+  SE_Characters.CreateSprite('..\!media\shahira_WALK.bmp','shahira',{framesX}15,{framesY}6,{Delay}7,{X}500,{Y}100,{transparent}true,1);
 
-  SpriteTree := SE_Characters.CreateSprite('..\!media\tree.bmp','tree',{framesX}2,{framesY}1,{Delay}5,{X}250,{Y}250,{transparent}true);
+  SpriteTree := SE_Characters.CreateSprite('..\!media\tree.bmp','tree',{framesX}2,{framesY}1,{Delay}5,{X}250,{Y}250,{transparent}true,1);
   SpriteTree.ModPriority := 170;
 
   Randomize;
@@ -117,7 +117,7 @@ var
 begin
    SpriteShahira := SE_Characters.FindSprite('shahira');
    if SpriteShahira = nil then
-     SE_Characters.CreateSprite('..\!media\shahira_WALK.bmp','shahira',{framesX}15,{framesY}6,{Delay}7,{X}500,{Y}100,{transparent}true);
+     SE_Characters.CreateSprite('..\!media\shahira_WALK.bmp','shahira',{framesX}15,{framesY}6,{Delay}7,{X}500,{Y}100,{transparent}true,1);
 
    SpriteGabriel:= SE_Characters.FindSprite('gabriel');
    SpriteShahira:= SE_Characters.FindSprite('shahira');
@@ -128,7 +128,7 @@ begin
    SpriteGabriel.FrameX := 1;
 
    SpriteSpell := SE_Characters.CreateSprite('..\!media\spell.bmp' ,'spell',{framesX}9,{framesY}1,{Delay}5,
-   {X}SpriteGabriel.Position.X ,{Y}SpriteGabriel.Position.Y,{transparent}true);
+   {X}SpriteGabriel.Position.X ,{Y}SpriteGabriel.Position.Y,{transparent}true,2);
 
    SpriteSpell.MoverData.Speed := 4.0;
    SpriteSpell.MoverData.Destination := SpriteShahira.Position ;

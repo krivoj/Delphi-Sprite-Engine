@@ -479,11 +479,11 @@ type
     function IsAnySpriteVisible : Boolean;
 
     procedure ProcessSprites(interval: Integer);
-    function CreateSprite( const FileName,Guid: string; nFramesX, nFramesY, nDelay, posX, posY: integer; const Transparent: boolean ): SE_Sprite;overload;
-    function CreateSprite(const bmp: TBitmap; const Guid: string; nFramesX, nFramesY, nDelay, posX, posY: integer; const Transparent: boolean  ): SE_Sprite; overload;
+    function CreateSprite( const FileName,Guid: string; nFramesX, nFramesY, nDelay, posX, posY: integer; const Transparent: boolean; const aPriority: integer ): SE_Sprite;overload;
+    function CreateSprite(const bmp: TBitmap; const Guid: string; nFramesX, nFramesY, nDelay, posX, posY: integer; const Transparent: boolean; const aPriority: integer  ): SE_Sprite; overload;
     procedure AddSprite(aSprite: SE_Sprite) ;
     function CreateSpriteProgressBar(const Guid: string; posX, posY, Width,Height: integer; aFontName: string;
-     aFontColor, aBarColor, aBackColor: TColor; aFontSize: Integer; aText: string; aValue: integer; aTransparent: boolean ): SE_SpriteProgressBar;
+     aFontColor, aBarColor, aBackColor: TColor; aFontSize: Integer; aText: string; aValue: integer; aTransparent: boolean; aPriority: integer ): SE_SpriteProgressBar;
 
 
     procedure Clear;
@@ -1548,7 +1548,7 @@ end;
 (*----------------------------------------------------------------------------------*)
 (* Carica un Bitamp 24bit uncompressed da file impostando i parametri di animazione *)
 (*----------------------------------------------------------------------------------*)
-function SE_Engine.CreateSprite(const FileName,Guid: string; nFramesX, nFramesY, nDelay, posX, posY: integer; const Transparent: boolean  ): SE_Sprite;
+function SE_Engine.CreateSprite(const FileName,Guid: string; nFramesX, nFramesY, nDelay, posX, posY: integer; const Transparent: boolean; const aPriority: integer  ): SE_Sprite;
 var
 aSprite: SE_Sprite;
 begin
@@ -1558,7 +1558,7 @@ begin
 //  PixelClick:= FTheater.PixelClick ;
   aSprite.OnDestinationreached := aSprite.iOnDestinationReached ;// aSpriteReachdestination;
   aSprite.Guid := Guid;
-
+  aSprite.Priority := aPriority;
  // if (posX >= 0) and (posY >=0) then aSprite.Position :=  Point(posX,posY);
 
   lstNewSprites.Add( ASprite );
@@ -1568,7 +1568,7 @@ end;
 (*---------------------------------------------------------------------------------------------*)
 (* Carica un Bitamp 24bit uncompressed da un altro Bitmap impostando i parametri di animazione *)
 (*---------------------------------------------------------------------------------------------*)
-function SE_Engine.CreateSprite(const bmp: TBitmap; const Guid: string; nFramesX, nFramesY, nDelay, posX, posY: integer; const Transparent: boolean  ): SE_Sprite;
+function SE_Engine.CreateSprite(const bmp: TBitmap; const Guid: string; nFramesX, nFramesY, nDelay, posX, posY: integer; const Transparent: boolean; const aPriority: integer): SE_Sprite;
 var
 aSprite: SE_Sprite;
 begin
@@ -1578,6 +1578,7 @@ begin
   ASprite.FEngine := self;
   aSprite.OnDestinationreached := aSprite.iOnDestinationReached ;// aSpriteReachdestination;
   aSprite.Guid := Guid;
+  aSprite.Priority := aPriority;
 
 //  if (posX >= 0) and (posY >=0) then aSprite.Position :=  Point(posX,posY);
 
@@ -1586,7 +1587,7 @@ begin
   Result:= aSprite;
 end;
 function SE_Engine.CreateSpriteProgressBar(const Guid: string; posX, posY, Width,Height: integer; aFontName: string;
-   aFontColor, aBarColor, aBackColor: TColor; aFontSize: Integer; aText: string; aValue: integer; aTransparent: boolean ): SE_SpriteProgressBar;
+   aFontColor, aBarColor, aBackColor: TColor; aFontSize: Integer; aText: string; aValue: integer; aTransparent: boolean; aPriority:integer ): SE_SpriteProgressBar;
 var
 aSpriteProgressBar: SE_SpriteProgressBar;
 begin
@@ -1596,7 +1597,7 @@ begin
   aSpriteProgressBar.FEngine := self;
   aSpriteProgressBar.OnDestinationreached := aSpriteProgressBar.iOnDestinationReached ;// aSpriteReachdestination;
   aSpriteProgressBar.Guid := Guid;
-
+  aSpriteProgressBar.Priority := aPriority;
 //  if (posX >= 0) and (posY >=0) then aSprite.Position :=  Point(posX,posY);
 
   lstNewSprites.Add( aSpriteProgressBar );
