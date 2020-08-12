@@ -3074,7 +3074,7 @@ begin
       fBMPCurrentFrame.Canvas.TextOut ( diffx , diffy, SE_SpriteProgressBar(Self).Text  ) ;  }
 
       SetBkMode(fBMPCurrentFrame.Canvas.Handle,SE_SpriteProgressBar(Self).SpriteLabel.lTransparent ); // 1= transparent
-      DrawText(fBMPCurrentFrame.Canvas.handle, PChar(SE_SpriteProgressBar(Self).SpriteLabel.lText), length(SE_SpriteProgressBar(Self).SpriteLabel.lText), R, dt_wordbreak or lstLabels.Items[i].lAlignment );
+      DrawText(fBMPCurrentFrame.Canvas.handle, PChar(SE_SpriteProgressBar(Self).SpriteLabel.lText), length(SE_SpriteProgressBar(Self).SpriteLabel.lText), R, dt_wordbreak or SE_SpriteProgressBar(Self).SpriteLabel.lAlignment );
    end;
 
    if Transparent then begin
