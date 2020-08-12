@@ -737,11 +737,16 @@ type
   protected
   public
     Guid: string;
-    SpriteLabel: SE_SpriteLabel;
     Text : String;
     Value : Integer; // percentuale
     BarColor: TColor;
     BackColor: TColor;
+    pbHAlignment,pbVAlignment: Integer;
+    lFontName: string;
+    lFontStyle : TFontStyles;
+    lFontSize: Integer;
+    lFontColor: TColor;
+    lFontQuality : TFontQuality;
  // aggiorna il bmp interno ogni volta con fillrect
   constructor create ( const guid: string; x,y,w,h: integer; aFontName: string; aFontColor, aBarColor, aBackColor: TColor; aFontSize: Integer; aText: string; aValue: integer; aTransparent: boolean );
   destructor destroy; override;
@@ -1604,10 +1609,15 @@ begin
   aSpriteProgressBar.OnDestinationreached := aSpriteProgressBar.iOnDestinationReached ;// aSpriteReachdestination;
   aSpriteProgressBar.Guid := Guid;
   aSpriteProgressBar.Priority := aPriority;
+  aSpriteProgressBar.Value:= aValue;
+  aSpriteProgressBar.BackColor := aBackColor;
+  aSpriteProgressBar.pbHAlignment := DT_CENTER;
+  aSpriteProgressBar.pbVAlignment := DT_VCENTER;
 //  if (posX >= 0) and (posY >=0) then aSprite.Position :=  Point(posX,posY);
 
   lstNewSprites.Add( aSpriteProgressBar );
   aSpriteProgressBar.Visible := true;
+  aSpriteProgressBar.Transparent := False;
   Result:= aSpriteProgressBar;
 end;
 procedure SE_Engine.AddSprite(aSprite: SE_Sprite) ;
@@ -3025,7 +3035,7 @@ begin
       end;
 
       // con questa versione non posos mettere la label a X,Y
-              R.Left := lstLabels.Items[i].lX;
+        R.Left := lstLabels.Items[i].lX;
         R.Top := lstLabels.Items[i].lY;
         R.Right :=  fBMPCurrentFrame.Bitmap.Width;
         R.Bottom := fBMPCurrentFrame.Bitmap.height;
@@ -3061,20 +3071,20 @@ begin
       fBMPCurrentFrame.Canvas.Brush.Color := SE_SpriteProgressBar(Self).BarColor;
       fBMPCurrentFrame.Canvas.FillRect( Rect(0,0, ( SE_SpriteProgressBar(Self).Value* fBMPCurrentFrame.Width ) div 100 ,fBMPCurrentFrame.Height));
 
-      fBMPCurrentFrame.Canvas.Font.Name := ( SE_SpriteProgressBar(Self).SpriteLabel.lFontName );
-      fBMPCurrentFrame.Canvas.Font.Color := SE_SpriteProgressBar(Self).SpriteLabel.lFontColor;
-      fBMPCurrentFrame.Canvas.Font.Size := SE_SpriteProgressBar(Self).SpriteLabel.lFontSize;
+      fBMPCurrentFrame.Canvas.Font.Name := ( SE_SpriteProgressBar(Self).lFontName );
+      fBMPCurrentFrame.Canvas.Font.Color := SE_SpriteProgressBar(Self).lFontColor;
+      fBMPCurrentFrame.Canvas.Font.Size := SE_SpriteProgressBar(Self).lFontSize;
       //fBMPCurrentFrame.Canvas.Brush.Style := bsClear;
-      fBMPCurrentFrame.Canvas.Font.Quality :=  SE_SpriteProgressBar(Self).SpriteLabel.lFontQuality;
+      fBMPCurrentFrame.Canvas.Font.Quality :=  SE_SpriteProgressBar(Self).lFontQuality;
 
-{      textWidth:=fBMPCurrentFrame.Canvas.TextWidth( SE_SpriteProgressBar(Self).Text) ;
-      DiffX := ((FFrameWidth - textWidth) div 2);
-      textHeight:=fBMPCurrentFrame.Canvas.TextHeight( SE_SpriteProgressBar(Self).Text) ;
-      DiffY := ((FFrameHeight - textHeight) div 2);
-      fBMPCurrentFrame.Canvas.TextOut ( diffx , diffy, SE_SpriteProgressBar(Self).Text  ) ;  }
+      R.Left := 0;
+      R.Top := 0;
+      R.Right :=  fBMPCurrentFrame.Bitmap.Width;
+      R.Bottom := fBMPCurrentFrame.Bitmap.height;
 
-      SetBkMode(fBMPCurrentFrame.Canvas.Handle,SE_SpriteProgressBar(Self).SpriteLabel.lTransparent ); // 1= transparent
-      DrawText(fBMPCurrentFrame.Canvas.handle, PChar(SE_SpriteProgressBar(Self).SpriteLabel.lText), length(SE_SpriteProgressBar(Self).SpriteLabel.lText), R, dt_wordbreak or SE_SpriteProgressBar(Self).SpriteLabel.lAlignment );
+
+      SetBkMode(fBMPCurrentFrame.Canvas.Handle,1); // 1= transparent
+      DrawText(fBMPCurrentFrame.Canvas.handle, PChar(SE_SpriteProgressBar(Self).text), length(SE_SpriteProgressBar(Self).Text), R, SE_SpriteProgressBar(Self).pbHAlignment or SE_SpriteProgressBar(Self).pbVAlignment );
    end;
 
    if Transparent then begin
@@ -3141,12 +3151,12 @@ begin
   FPositionX:= X;
   FPositionY:= Y;
 
-  SpriteLabel := SE_SpriteLabel.create ( 0,0,aFontName,aFontColor,0,aFontSize,aText,true, windows.TRANSPARENT,dt_center );
-  SpriteLabel.lFontName := aFontName;
-  SpriteLabel.lFontColor := aFontColor;
-  SpriteLabel.lFontSize := aFontSize;
-  SpriteLabel.lText := aText;
-
+  Text := aText;
+  lFontName := aFontName;
+  lFontColor := aFontColor;
+  lFontSize := aFontSize;
+//  lBrushStyle := bsclear; // default;
+  lFontQuality := fqAntialiased; // default
 
   fpause    :=false;
 
@@ -3204,7 +3214,6 @@ begin
 end;
 destructor SE_SpriteProgressBar.Destroy; //--> distrugge la spriteLabel, poi inherited
 begin
-  SpriteLabel.Free;
   inherited;
 end;
 
