@@ -58,13 +58,16 @@ type
   private
   protected
   public
-    Transparent: boolean; // riguardo a lbmp ma al momento non usato singolarmente
+    lAlignment: Integer;
+    lTransparent: integer; // riguardo a lbmp ma al momento non usato singolarmente
     lX : Integer;
     lY : Integer;
     lFontName: string;
     lFontStyle : TFontStyles;
     lFontSize: Integer;
     lFontColor: TColor;
+    lFontQuality : TFontQuality;
+//    lBrushStyle : TBrushStyle;
     lBackColor: TColor;
     lText : String;
     lVisible: Boolean;
@@ -72,7 +75,7 @@ type
     stag: string;
     LifeSpan: Integer;
     Dead: boolean;
-  constructor create (x,y: integer; FontName: string; FontColor, BackColor: TColor; FontSize: Integer; atext: string; visible: boolean);
+  constructor create (x,y: integer; FontName: string; FontColor, BackColor: TColor; FontSize: Integer; atext: string; visible: boolean; Trans,Alignment:integer);
   destructor Destroy;override;
   end;
 
@@ -358,7 +361,6 @@ type
     property OnKeyPress;
     property OnKeyUp;
     property OnContextPopup;
-
 
 
   end;
@@ -999,8 +1001,10 @@ begin
   if result >180 then result:=result-360;
   if result<= -180 then result:=result+360;
 end;
-constructor SE_SpriteLabel.create ( x,y: integer; FontName: string; FontColor, BackColor: TColor; FontSize: Integer;atext: string; visible: boolean);
+constructor SE_SpriteLabel.create ( x,y: integer; FontName: string; FontColor, BackColor: TColor; FontSize: Integer;atext: string; visible: boolean; Trans,Alignment:integer);
 begin
+  lAlignment:= Alignment;
+  lTransparent := Trans;
   lx := x;
   ly := y;
   lFontName := FontName;
@@ -1009,6 +1013,8 @@ begin
   ltext:= atext;
   lVisible:= visible;
   lbackcolor := BackColor;
+//  lBrushStyle := bsclear; // default;
+  lFontQuality := fqAntialiased; // default
 end;
 destructor SE_SpriteLabel.Destroy;
 begin
@@ -2958,6 +2964,7 @@ var
   diff,textwidth,diffx,diffy,TextHeight: Integer;
   DestBitmap: SE_Bitmap;
   NewWidth, NewHeight : Integer;
+  R :Trect;
 begin
 
     
@@ -3008,11 +3015,30 @@ begin
       fBMPCurrentFrame.Canvas.Font.Color := lstLabels.Items[i].lFontColor;
       fBMPCurrentFrame.Canvas.Font.Size := lstLabels.Items[i].lFontSize;
       fBMPCurrentFrame.Canvas.Font.Style := lstLabels.Items[i].lFontStyle;
-      fBMPCurrentFrame.Canvas.Brush.Style := bsClear;
-      fBMPCurrentFrame.Canvas.Font.Quality :=  fqAntialiased;
-         // if Guid ='btn_marketvalue' then asm int 3; end;
+      fBMPCurrentFrame.Canvas.Font.Quality := lstLabels.Items[i].lFontQuality;
+//      fBMPCurrentFrame.Canvas.Brush.Style := lstLabels.Items[i].lBrushStyle;// bsClear;
 
-      if lstLabels.Items[i].lX =-1 then begin    // -1 Center X
+      if lstLabels.Items[i].lTransparent <> 1 then begin
+        fBMPCurrentFrame.Canvas.Brush.Color := lstLabels.Items[i].lBackColor;
+        fBMPCurrentFrame.Bitmap.Canvas.FillRect(Rect(0,0,fBMPCurrentFrame.Width,fBMPCurrentFrame.Height));
+
+      end;
+
+      // con questa versione non posos mettere la label a X,Y
+              R.Left := lstLabels.Items[i].lX;
+        R.Top := lstLabels.Items[i].lY;
+        R.Right :=  fBMPCurrentFrame.Bitmap.Width;
+        R.Bottom := fBMPCurrentFrame.Bitmap.height;
+
+//        if lstLabels.Items[i].lBrushStyle = bsclear then
+          SetBkMode(fBMPCurrentFrame.Canvas.Handle,lstLabels.Items[i].lTransparent ); // 1= transparent
+//          else SetBkMode(fBMPCurrentFrame.Canvas.Handle,OPAQUE);
+
+        DrawText(fBMPCurrentFrame.Canvas.handle, PChar(lstLabels.Items[i].lText), length(lstLabels.Items[i].lText), R, dt_wordbreak or lstLabels.Items[i].lAlignment );
+
+        //  if Guid ='yes' then asm int 3; end;
+
+{      if lstLabels.Items[i].lX =-1 then begin    // -1 Center X
 
           textWidth:=fBMPCurrentFrame.Canvas.TextWidth(lstLabels.Items[i].lText) ;
           Diff := ((FFrameWidth - textWidth) div 2);
@@ -3021,8 +3047,8 @@ begin
 
       end
       else
-      fBMPCurrentFrame.Canvas.TextOut(lstLabels.Items[i].lX , lstLabels.Items[i].lY, lstLabels.Items[i].lText  ) ;
-      //fBMPCurrentFrame.Canvas.Brush.Style := bsSolid;
+      fBMPCurrentFrame.Canvas.TextOut(lstLabels.Items[i].lX , lstLabels.Items[i].lY, lstLabels.Items[i].lText  ) ;   }
+
 
 
     end;
@@ -3038,14 +3064,17 @@ begin
       fBMPCurrentFrame.Canvas.Font.Name := ( SE_SpriteProgressBar(Self).SpriteLabel.lFontName );
       fBMPCurrentFrame.Canvas.Font.Color := SE_SpriteProgressBar(Self).SpriteLabel.lFontColor;
       fBMPCurrentFrame.Canvas.Font.Size := SE_SpriteProgressBar(Self).SpriteLabel.lFontSize;
-      fBMPCurrentFrame.Canvas.Brush.Style := bsClear;
-      fBMPCurrentFrame.Canvas.Font.Quality :=  fqAntialiased;
-      textWidth:=fBMPCurrentFrame.Canvas.TextWidth( SE_SpriteProgressBar(Self).Text) ;
+      //fBMPCurrentFrame.Canvas.Brush.Style := bsClear;
+      fBMPCurrentFrame.Canvas.Font.Quality :=  SE_SpriteProgressBar(Self).SpriteLabel.lFontQuality;
+
+{      textWidth:=fBMPCurrentFrame.Canvas.TextWidth( SE_SpriteProgressBar(Self).Text) ;
       DiffX := ((FFrameWidth - textWidth) div 2);
       textHeight:=fBMPCurrentFrame.Canvas.TextHeight( SE_SpriteProgressBar(Self).Text) ;
       DiffY := ((FFrameHeight - textHeight) div 2);
-      fBMPCurrentFrame.Canvas.TextOut ( diffx , diffy, SE_SpriteProgressBar(Self).Text  ) ;
-//      fBMPCurrentFrame.Canvas.Brush.Style := bsSolid;
+      fBMPCurrentFrame.Canvas.TextOut ( diffx , diffy, SE_SpriteProgressBar(Self).Text  ) ;  }
+
+      SetBkMode(fBMPCurrentFrame.Canvas.Handle,SE_SpriteProgressBar(Self).SpriteLabel.lTransparent ); // 1= transparent
+      DrawText(fBMPCurrentFrame.Canvas.handle, PChar(SE_SpriteProgressBar(Self).SpriteLabel.lText), length(SE_SpriteProgressBar(Self).SpriteLabel.lText), R, dt_wordbreak or lstLabels.Items[i].lAlignment );
    end;
 
    if Transparent then begin
@@ -3112,11 +3141,12 @@ begin
   FPositionX:= X;
   FPositionY:= Y;
 
-  SpriteLabel := SE_SpriteLabel.create ( 0,0,aFontName,aFontColor,0,aFontSize,aText,true );
+  SpriteLabel := SE_SpriteLabel.create ( 0,0,aFontName,aFontColor,0,aFontSize,aText,true, windows.TRANSPARENT,dt_center );
   SpriteLabel.lFontName := aFontName;
   SpriteLabel.lFontColor := aFontColor;
   SpriteLabel.lFontSize := aFontSize;
   SpriteLabel.lText := aText;
+
 
   fpause    :=false;
 

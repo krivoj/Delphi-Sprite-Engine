@@ -270,13 +270,15 @@ begin
 
    SpriteGabriel.labels.Clear ;
 
-   SpriteLabel := SE_SpriteLabel.create(0,64,'Verdana',clYellow,clBlack,8,'Gabriel',True);
+   SpriteLabel := SE_SpriteLabel.create(0,64,'Verdana',clYellow,clGreen,8,'Gabriel',True, 1, dt_center );   // 1= transparent, 2= opaque
    SpriteGabriel.Labels.Add(SpriteLabel);
+   SpriteLabel.lFontQuality := fqAntialiased;
 
    SpriteShahira.labels.Clear ;
 
-   SpriteLabel := SE_SpriteLabel.create(0,64,'Verdana',clYellow,clBlack,8,'Shahira',True);
+   SpriteLabel := SE_SpriteLabel.create(0,64,'Verdana',clYellow,clgreen,8,'Shahira',True, 1, dt_center );
    SpriteShahira.Labels.Add(SpriteLabel);
+   SpriteLabel.lFontQuality := fqAntialiased;
 
 end;
 
