@@ -8,6 +8,7 @@ uses
   DSE_Bitmap, DSE_ThreadTimer, DSE_Misc, DSE_defs,  Generics.Collections ,Generics.Defaults, dse_pathplanner;
 
   const dt_XCenter = 5;
+  const dt_XRighh = 7;
 
   Type TGridStyle = (gsNone,gsHex);
   Type TRenderBitmap = ( VirtualRender, VisibleRender );
@@ -3045,15 +3046,20 @@ begin
         SetBkMode(fBMPCurrentFrame.Canvas.Handle,lstLabels.Items[i].lTransparent ); // 1= transparent ,2= OPAQUE
 
 
-        if lstLabels.Items[i].lAlignment <> 5 then  // 5 è il mio centro speciale
-          DrawText(fBMPCurrentFrame.Canvas.handle, PChar(lstLabels.Items[i].lText), length(lstLabels.Items[i].lText), R, dt_wordbreak or lstLabels.Items[i].lAlignment  )
-        else begin
+        if lstLabels.Items[i].lAlignment = 5 then begin // 5 è il mio centro speciale
           textWidth := fBMPCurrentFrame.Canvas.TextWidth(lstLabels.Items[i].lText);
-//          Diff := ((FFrameWidth - textWidth) div 2)  ;
           R.Left := R.Left - (textWidth div 2);
           R.Width := textwidth;
           DrawText(fBMPCurrentFrame.Canvas.handle, PChar(lstLabels.Items[i].lText), length(lstLabels.Items[i].lText), R, dt_wordbreak or dt_Center  );
-        end;
+        end
+        else if lstLabels.Items[i].lAlignment = 7 then begin // 7 a X a destra
+          textWidth := fBMPCurrentFrame.Canvas.TextWidth(lstLabels.Items[i].lText);
+          R.Left := R.Left - textWidth;
+          R.Width := textwidth;
+          DrawText(fBMPCurrentFrame.Canvas.handle, PChar(lstLabels.Items[i].lText), length(lstLabels.Items[i].lText), R, dt_wordbreak or DT_RIGHT  );
+        end
+        else begin
+          DrawText(fBMPCurrentFrame.Canvas.handle, PChar(lstLabels.Items[i].lText), length(lstLabels.Items[i].lText), R, dt_wordbreak or lstLabels.Items[i].lAlignment  )
         //  if Guid ='yes' then asm int 3; end;
 
 {      if lstLabels.Items[i].lX =-1 then begin    // -1 Center X
