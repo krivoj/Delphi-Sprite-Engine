@@ -7,6 +7,8 @@ uses
   Windows, Messages, vcl.Graphics, vcl.Controls, vcl.Forms, system.Classes, system.SysUtils, vcl.StdCtrls, vcl.ExtCtrls, strutils,DSE_list,
   DSE_Bitmap, DSE_ThreadTimer, DSE_Misc, DSE_defs,  Generics.Collections ,Generics.Defaults, dse_pathplanner;
 
+  const dt_XCenter = 5;
+
   Type TGridStyle = (gsNone,gsHex);
   Type TRenderBitmap = ( VirtualRender, VisibleRender );
 type
@@ -3040,12 +3042,18 @@ begin
         R.Right :=  fBMPCurrentFrame.Bitmap.Width;
         R.Bottom := fBMPCurrentFrame.Bitmap.height;
 
-//        if lstLabels.Items[i].lBrushStyle = bsclear then
-          SetBkMode(fBMPCurrentFrame.Canvas.Handle,lstLabels.Items[i].lTransparent ); // 1= transparent
-//          else SetBkMode(fBMPCurrentFrame.Canvas.Handle,OPAQUE);
+        SetBkMode(fBMPCurrentFrame.Canvas.Handle,lstLabels.Items[i].lTransparent ); // 1= transparent ,2= OPAQUE
 
-        DrawText(fBMPCurrentFrame.Canvas.handle, PChar(lstLabels.Items[i].lText), length(lstLabels.Items[i].lText), R, dt_wordbreak or lstLabels.Items[i].lAlignment );
 
+        if lstLabels.Items[i].lAlignment <> 5 then  // 5 è il mio centro speciale
+          DrawText(fBMPCurrentFrame.Canvas.handle, PChar(lstLabels.Items[i].lText), length(lstLabels.Items[i].lText), R, dt_wordbreak or lstLabels.Items[i].lAlignment  )
+        else begin
+          textWidth := fBMPCurrentFrame.Canvas.TextWidth(lstLabels.Items[i].lText);
+//          Diff := ((FFrameWidth - textWidth) div 2)  ;
+          R.Left := R.Left - (textWidth div 2);
+          R.Width := textwidth;
+          DrawText(fBMPCurrentFrame.Canvas.handle, PChar(lstLabels.Items[i].lText), length(lstLabels.Items[i].lText), R, dt_wordbreak or dt_Center  );
+        end;
         //  if Guid ='yes' then asm int 3; end;
 
 {      if lstLabels.Items[i].lX =-1 then begin    // -1 Center X
