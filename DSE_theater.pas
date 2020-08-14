@@ -8,7 +8,7 @@ uses
   DSE_Bitmap, DSE_ThreadTimer, DSE_Misc, DSE_defs,  Generics.Collections ,Generics.Defaults, dse_pathplanner;
 
   const dt_XCenter = 5;
-  const dt_XRighh = 7;
+  const dt_XRight = 7;
 
   Type TGridStyle = (gsNone,gsHex);
   Type TRenderBitmap = ( VirtualRender, VisibleRender );
@@ -653,8 +653,7 @@ type
     procedure Render(RenderTo: TRenderBitmap);  virtual;
 
     procedure SetPositionCell(const Value: TPoint);
-    procedure MakeDelay(msecs: integer);
-
+    
     function FindSubSprite ( Guid : string): SE_SubSprite;
     procedure AddSubSprite ( const FileName, Guid: string; posX, posY: integer; const TransparentSprite: boolean);overload; virtual;
     procedure AddSubSprite ( const bmp: SE_Bitmap; Guid: string; posX, posY: integer; const TransparentSprite: boolean);overload; virtual;
@@ -3012,7 +3011,7 @@ begin
 
   // labels
 
-   for I := 0 to lstLabels.Count -1 do begin
+  for I := 0 to lstLabels.Count -1 do begin
 
     if lstLabels.Items [i].LifeSpan > 0 then  begin
       lstLabels.Items [i].LifeSpan := lstLabels.Items [i].LifeSpan - FTheater.thrdAnimate.Interval ;
@@ -3029,7 +3028,7 @@ begin
       fBMPCurrentFrame.Canvas.Font.Size := lstLabels.Items[i].lFontSize;
       fBMPCurrentFrame.Canvas.Font.Style := lstLabels.Items[i].lFontStyle;
       fBMPCurrentFrame.Canvas.Font.Quality := lstLabels.Items[i].lFontQuality;
-//      fBMPCurrentFrame.Canvas.Brush.Style := lstLabels.Items[i].lBrushStyle;// bsClear;
+  //      fBMPCurrentFrame.Canvas.Brush.Style := lstLabels.Items[i].lBrushStyle;// bsClear;
 
       if lstLabels.Items[i].lTransparent <> 1 then begin
         fBMPCurrentFrame.Canvas.Brush.Color := lstLabels.Items[i].lBackColor;
@@ -3037,48 +3036,36 @@ begin
 
       end;
 
-      // con questa versione non posos mettere la label a X,Y
-        R.Left := lstLabels.Items[i].lX;
-        R.Top := lstLabels.Items[i].lY;
-        R.Right :=  fBMPCurrentFrame.Bitmap.Width;
-        R.Bottom := fBMPCurrentFrame.Bitmap.height;
+    // con questa versione non posos mettere la label a X,Y
+      R.Left := lstLabels.Items[i].lX;
+      R.Top := lstLabels.Items[i].lY;
+      R.Right :=  fBMPCurrentFrame.Bitmap.Width;
+      R.Bottom := fBMPCurrentFrame.Bitmap.height;
 
-        SetBkMode(fBMPCurrentFrame.Canvas.Handle,lstLabels.Items[i].lTransparent ); // 1= transparent ,2= OPAQUE
+      SetBkMode(fBMPCurrentFrame.Canvas.Handle,lstLabels.Items[i].lTransparent ); // 1= transparent ,2= OPAQUE
 
 
-        if lstLabels.Items[i].lAlignment = 5 then begin // 5 è il mio centro speciale
-          textWidth := fBMPCurrentFrame.Canvas.TextWidth(lstLabels.Items[i].lText);
-          R.Left := R.Left - (textWidth div 2);
-          R.Width := textwidth;
-          DrawText(fBMPCurrentFrame.Canvas.handle, PChar(lstLabels.Items[i].lText), length(lstLabels.Items[i].lText), R, dt_wordbreak or dt_Center  );
-        end
-        else if lstLabels.Items[i].lAlignment = 7 then begin // 7 a X a destra
-          textWidth := fBMPCurrentFrame.Canvas.TextWidth(lstLabels.Items[i].lText);
-          R.Left := R.Left - textWidth;
-          R.Width := textwidth;
-          DrawText(fBMPCurrentFrame.Canvas.handle, PChar(lstLabels.Items[i].lText), length(lstLabels.Items[i].lText), R, dt_wordbreak or DT_RIGHT  );
-        end
-        else begin
-          DrawText(fBMPCurrentFrame.Canvas.handle, PChar(lstLabels.Items[i].lText), length(lstLabels.Items[i].lText), R, dt_wordbreak or lstLabels.Items[i].lAlignment  )
-        //  if Guid ='yes' then asm int 3; end;
-
-{      if lstLabels.Items[i].lX =-1 then begin    // -1 Center X
-
-          textWidth:=fBMPCurrentFrame.Canvas.TextWidth(lstLabels.Items[i].lText) ;
-          Diff := ((FFrameWidth - textWidth) div 2);
-          fBMPCurrentFrame.Canvas.TextOut ( diff ,
-          lstLabels.Items[i].lY, lstLabels.Items[i].lText  ) ;
-
+      if lstLabels.Items[i].lAlignment = 5 then begin // 5 è il mio centro speciale
+        textWidth := fBMPCurrentFrame.Canvas.TextWidth(lstLabels.Items[i].lText);
+        R.Left := R.Left - (textWidth div 2);
+        R.Width := textwidth;
+        DrawText(fBMPCurrentFrame.Canvas.handle, PChar(lstLabels.Items[i].lText), length(lstLabels.Items[i].lText), R, dt_wordbreak or dt_Center  );
       end
-      else
-      fBMPCurrentFrame.Canvas.TextOut(lstLabels.Items[i].lX , lstLabels.Items[i].lY, lstLabels.Items[i].lText  ) ;   }
+      else if lstLabels.Items[i].lAlignment = 7 then begin // 7 a X a destra
+        textWidth := fBMPCurrentFrame.Canvas.TextWidth(lstLabels.Items[i].lText);
+        R.Left := R.Left - textWidth;
+        R.Width := textwidth;
+        DrawText(fBMPCurrentFrame.Canvas.handle, PChar(lstLabels.Items[i].lText), length(lstLabels.Items[i].lText), R, dt_wordbreak or DT_RIGHT  );
+      end
+      else begin
+        DrawText(fBMPCurrentFrame.Canvas.handle, PChar(lstLabels.Items[i].lText), length(lstLabels.Items[i].lText), R, dt_wordbreak or lstLabels.Items[i].lAlignment  )
+      //  if Guid ='yes' then asm int 3; end;
+      end;
+     end;
 
+  end;
 
-
-    end;
-   end;
-
-   if SpriteFileName = 'TProgressBar'  then begin
+  if SpriteFileName = 'TProgressBar'  then begin
      // fBMPCurrentFrame.Canvas.Brush.Style := bsSolid;
       fBMPCurrentFrame.Canvas.Brush.Color := SE_SpriteProgressBar(Self).BackColor;
       fBMPCurrentFrame.Canvas.FillRect( Rect(0,0,fBMPCurrentFrame.Width,fBMPCurrentFrame.Height ) );
@@ -3098,10 +3085,18 @@ begin
 
 
       SetBkMode(fBMPCurrentFrame.Canvas.Handle,1); // 1= transparent
-      DrawText(fBMPCurrentFrame.Canvas.handle, PChar(SE_SpriteProgressBar(Self).text), length(SE_SpriteProgressBar(Self).Text), R, SE_SpriteProgressBar(Self).pbHAlignment or SE_SpriteProgressBar(Self).pbVAlignment );
-   end;
+      if SE_SpriteProgressBar(Self).pbHAlignment = 7 then begin // 7 a X a destra    // right della barra colorata (value)
+        textWidth := fBMPCurrentFrame.Canvas.TextWidth(SE_SpriteProgressBar(Self).Text);
+        R.Right := ( SE_SpriteProgressBar(Self).Value* fBMPCurrentFrame.Width ) div 100;
+        R.Left := R.Right - textwidth;
+        DrawText(fBMPCurrentFrame.Canvas.handle, PChar(SE_SpriteProgressBar(Self).Text), length(SE_SpriteProgressBar(Self).Text), R, dt_wordbreak or DT_RIGHT  );
+      end
+      else // left, right ,center normali
+        DrawText(fBMPCurrentFrame.Canvas.handle, PChar(SE_SpriteProgressBar(Self).text), length(SE_SpriteProgressBar(Self).Text), R, SE_SpriteProgressBar(Self).pbHAlignment or SE_SpriteProgressBar(Self).pbVAlignment );
 
-   if Transparent then begin
+  end;
+
+  if Transparent then begin
 
      if fTransparentForced  then begin
        aTRGB:= TColor2TRGB (fTransparentColor);
@@ -3111,7 +3106,7 @@ begin
        aTRGB:= fBMPCurrentFrame.Pixel24   [0,0];
        wtrans:=    RGB2TColor (aTRGB.r, aTRGB.g , aTRGB.b) ;
      end;
-   end;
+  end;
 
   if Scale <> 0 then begin
     NewWidth:= trunc (( fBmpCurrentFrame.Width * Scale ) / 100);
@@ -3128,15 +3123,6 @@ begin
    fBmpCurrentFrame.CopyRectTo( DestBitmap,0,0,X,Y,fBmpCurrentFrame.Width+1, fBmpCurrentFrame.height+1,Transparent,wtrans ) ;
 
 
-end;
-procedure SE_Sprite.MakeDelay(msecs: integer);
-var
-  FirstTickCount: longint;
-begin
-  FirstTickCount := GetTickCount;
-   repeat
-     Application.ProcessMessages;
-   until ((GetTickCount-FirstTickCount) >= Longint(msecs));
 end;
 procedure SE_Theater.Loaded;
 begin

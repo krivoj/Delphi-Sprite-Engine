@@ -50,7 +50,7 @@ begin
   SE_Characters.CreateSprite('..\!media\shahira_IDLE.1.bmp','shahira',{framesX}15,{framesY}1,{Delay}5,{X}200,{Y}100,{transparent}true,1);
 
   aSpriteProgressBar:= SE_Characters.CreateSpriteProgressBar('myprogressbar',200,200,300,32,'Calibri',clWhite-1,clRed,clBlue,14,'50', 50,true ,10);
-
+  aSpriteProgressBar.pbHAlignment := dt_XRight;
 
 end;
 
