@@ -3030,11 +3030,11 @@ begin
       fBMPCurrentFrame.Canvas.Font.Quality := lstLabels.Items[i].lFontQuality;
   //      fBMPCurrentFrame.Canvas.Brush.Style := lstLabels.Items[i].lBrushStyle;// bsClear;
 
-      if lstLabels.Items[i].lTransparent <> 1 then begin
-        fBMPCurrentFrame.Canvas.Brush.Color := lstLabels.Items[i].lBackColor;
-        fBMPCurrentFrame.Bitmap.Canvas.FillRect(Rect(0,0,fBMPCurrentFrame.Width,fBMPCurrentFrame.Height));
+//      if lstLabels.Items[i].lTransparent <> 1 then begin
+//        fBMPCurrentFrame.Canvas.Brush.Color := lstLabels.Items[i].lBackColor;
+//        fBMPCurrentFrame.Bitmap.Canvas.FillRect(Rect(0,0,fBMPCurrentFrame.Width,fBMPCurrentFrame.Height));
 
-      end;
+//      end;
 
     // con questa versione non posos mettere la label a X,Y
       R.Left := lstLabels.Items[i].lX;
@@ -3042,6 +3042,7 @@ begin
       R.Right :=  fBMPCurrentFrame.Bitmap.Width;
       R.Bottom := fBMPCurrentFrame.Bitmap.height;
 
+      fBMPCurrentFrame.Canvas.Brush.Color := lstLabels.Items[i].lBackColor;
       SetBkMode(fBMPCurrentFrame.Canvas.Handle,lstLabels.Items[i].lTransparent ); // 1= transparent ,2= OPAQUE
 
 
