@@ -158,7 +158,7 @@ procedure Register;
 implementation
 procedure Register;
 begin
-  RegisterComponents( 'iraFiles', [SE_SearchFiles] );
+  RegisterComponents( 'DSE', [SE_SearchFiles] );
 end;
 
 function IsFolder(aSRec: TSearchrec): Boolean;
