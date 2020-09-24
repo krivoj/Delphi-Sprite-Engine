@@ -2648,10 +2648,10 @@ procedure SE_Sprite.RemoveAllSubSprites ;
 var
   i: Integer;
 begin
-    for I := lstSubSprites.Count -1 downto 0  do begin
-      lstSubSprites[i].dead := true;
-      lstSubSprites.Delete(i);
-    end;
+  for I := lstSubSprites.Count -1 downto 0  do begin
+    lstSubSprites[i].dead := true;
+    lstSubSprites.Delete(i);
+  end;
 end;
 
 function SE_Sprite.CollisionDetect(aSprite: SE_sprite): Boolean;
@@ -3059,7 +3059,7 @@ begin
         DrawText(fBMPCurrentFrame.Canvas.handle, PChar(lstLabels.Items[i].lText), length(lstLabels.Items[i].lText), R, dt_wordbreak or DT_RIGHT  );
       end
       else begin
-        DrawText(fBMPCurrentFrame.Canvas.handle, PChar(lstLabels.Items[i].lText), length(lstLabels.Items[i].lText), R, dt_wordbreak or lstLabels.Items[i].lAlignment  )
+        DrawText(fBMPCurrentFrame.Canvas.handle, PChar(lstLabels.Items[i].lText), length(lstLabels.Items[i].lText), R, lstLabels.Items[i].lAlignment  )
       //  if Guid ='yes' then asm int 3; end;
       end;
      end;
