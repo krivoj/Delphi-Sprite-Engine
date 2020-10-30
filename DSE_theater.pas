@@ -502,6 +502,7 @@ type
     property Sprites[n: integer]: SE_Sprite read GetSprite;
     property SpriteIndex[aSprite: SE_Sprite]: integer read GetSpriteIndex;
     Function FindSprite (Guid: string):SE_sprite;
+    procedure SetSpriteAlpha ( Name: string; Alpha: double );
 
     property Destination[Sprite: SE_Sprite]: TPoint read GetDestination write SetDestination;
   published
@@ -2017,6 +2018,30 @@ begin
 
     lstDeadSprites.Delete( 0 );
   end;   }
+
+
+end;
+procedure SE_Engine.SetSpriteAlpha ( Name: string; Alpha: double );
+var
+  i: integer;
+begin
+  if Alpha <> 0 then begin
+
+    for i := lstSprites.Count - 1 downto 0 do begin
+       if ContainsText ( Sprites[i].Guid, Name ) then begin
+          Sprites[i].Alpha := Alpha;
+          Sprites[i].BlendMode := SE_BlendAlpha;
+       end;
+    end;
+
+  end
+  else begin
+    for i := lstSprites.Count - 1 downto 0 do begin
+          Sprites[i].BlendMode := SE_BlendNormal;
+
+    end;
+
+  end;
 
 
 end;
