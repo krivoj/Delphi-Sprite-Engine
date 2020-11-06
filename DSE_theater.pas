@@ -2645,7 +2645,7 @@ procedure SE_Sprite.DeleteSubSprite ( Guid : string);
 var
   i: Integer;
 begin
-  for I := lstSubSprites.Count -1 downto 0  do begin
+  for I :=  0 to lstSubSprites.Count -1 do begin
     if lstSubSprites[i].Guid = Guid then begin
       lstSubSprites[i].dead := true;
       lstSubSprites.Delete(i);
