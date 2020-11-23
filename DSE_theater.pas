@@ -106,8 +106,8 @@ type
     VirtualSource1x, VirtualSource1y, VirtualSourceWidth, VirtualSourceHeight: integer;
     fDstX, fDstY: integer;
 
-    fVirtualWidth: integer;
-    fVirtualheight: integer;
+    fVirtualWidth, fVirtualheight: integer;
+    fWrapHorizontal, fWrapVertical: Boolean;
 
     FActive: boolean;
 
@@ -160,6 +160,8 @@ type
     procedure SetCellHeight (const v: integer);
     procedure SetHexSmallWidth (const v: integer);
 
+    procedure SetWrapHorizontal(const v: boolean);
+    procedure SetWrapVertical(const v: boolean);
     procedure SetVirtualWidth(const v: integer);
     procedure SetVirtualHeight(const v: integer);
     procedure SetViewX(v: integer);
@@ -329,6 +331,9 @@ type
     property OnTheaterMouseDown: SE_TheaterMouseEvent read FOnTheaterMouseDown write FOnTheaterMouseDown;
     property OnTheaterMouseUp: SE_TheaterMouseEvent read FOnTheaterMouseUp write FOnTheaterMouseUp;
 
+    property WrapHorizontal: boolean read fWrapHorizontal write SetWrapHorizontal;
+    property WrapVertical: boolean read fWrapVertical write SetWrapVertical;
+
     property VirtualWidth: integer read fVirtualWidth write SetVirtualWidth;
     property Virtualheight: integer read fVirtualheight write SetVirtualheight;
     property Passive : boolean read fPassive write fpassive default False;
@@ -371,6 +376,7 @@ type
 
   SE_SpriteMoverData = class( TObject )
   private
+
     fStartX,fStartY: Integer;
     lstPartial : TStringList;
     FPartialList : String;
@@ -403,6 +409,11 @@ type
   protected
   public
     FSprite: SE_Sprite;
+
+    FFriction: single;
+    FMaximumSpeed: single;
+    fThrust: Single;
+    UseThrust : Boolean;
 
     TotalStep: Integer;
     curWP: Integer;
@@ -613,6 +624,7 @@ type
     function GetPosition: TPoint;
     procedure SetPosition(const Value: TPoint);
     procedure SetAngle(const Value: single);
+    function FixAngle(n: single): single;
     procedure SetFrameXmin (const Value: Integer);
     procedure SetFrameXmax (const Value: Integer);
 
@@ -754,6 +766,27 @@ type
   constructor create ( const guid: string; x,y,w,h: integer; aFontName: string; aFontColor, aBarColor, aBackColor: TColor; aFontSize: Integer; aText: string; aValue: integer; aTransparent: boolean );
   destructor destroy; override;
   end;
+
+ { SE_Spritepolygon = class (SE_Sprite)    + fireworks + thrustmover
+  private
+  protected
+  public
+    Guid: string;
+    Text : String;
+    Value : Integer; // percentuale
+    BarColor: TColor;
+    BackColor: TColor;
+    pbHAlignment,pbVAlignment: Integer;
+    lFontName: string;
+    lFontStyle : TFontStyles;
+    lFontSize: Integer;
+    lFontColor: TColor;
+    lFontQuality : TFontQuality;
+ // aggiorna il bmp interno ogni volta con fillrect
+  constructor create ( const guid: string; x,y,w,h: integer; aFontName: string; aFontColor, aBarColor, aBackColor: TColor; aFontSize: Integer; aText: string; aValue: integer; aTransparent: boolean );
+  destructor destroy; override;
+  end; }
+
 
   procedure GetLinePoints(X1, Y1, X2, Y2 : Integer; var PathPoints: dse_pathplanner.TPath); overload;
   procedure GetLinePoints(X1, Y1, X2, Y2 : Integer; var PathPoints: TList<TPoint>); overload;
@@ -2457,6 +2490,12 @@ function SE_Sprite.GetPositionY: single;
 begin
   Result := FPositionY;
 end;
+function SE_Sprite.FixAngle(n: single): single;
+begin
+  Result := n - 90;
+  if Result < 360 then
+    Result := Result + 360;
+end;
 
 
 procedure SE_Sprite.Move(interval: integer);
@@ -2464,8 +2503,8 @@ var
   temp: single;
   oldx, oldy: single;
   i,Dist,Dist2 : Integer;
+  VectorX, VectorY: single;
   label endMove;
-
 begin
   if LifeSpan > 0 then begin
     LifeSpan := LifeSpan - interval;
@@ -2536,9 +2575,8 @@ begin
 
     oldx :=  PositionX;
     oldy :=  PositionY;
-//    if Guid = 'ball' then begin
-//    OutputDebugString(PChar('ball ' +  FloatToStr(PositionX) + '  ' +  FloatToStr(PositionY) +'  ' +  FloatToStr(FMoverData.Speed)));
-//    end;
+
+  if not FMoverData.UseThrust then begin // normal, not thrust
     (*************************************************************************)
     (*                              X                                        *)
     (*************************************************************************)
@@ -2590,7 +2628,49 @@ begin
       end;
     end;
     ReleaseMutex(MutexMove);
-
+  end
+  else if FMoverData.UseThrust then begin
+    if FMoverData.fThrust > 0 then begin
+      VectorX := FMoverData.fThrust * Cos( Trunc( FixAngle( Angle ) ) * PI / 180 );
+      VectorY := FMoverData.fThrust * Sin( Trunc( FixAngle( Angle ) ) * PI / 180 );
+      FMoverData.SpeedX := FMoverData.SpeedX + VectorX;
+      FMoverData.SpeedY := FMoverData.SpeedY + VectorY;
+    end;
+    if (FMoverData.FFriction > 0) and (FMoverData.fThrust <= 0) then begin
+      if FMoverData.SpeedX > 0 then  begin
+        FMoverData.SpeedX := FMoverData.SpeedX - FMoverData.FFriction;
+        if FMoverData.SpeedX < 0 then
+          FMoverData.SpeedX := 0;
+      end;
+      if FMoverData.SpeedX < 0 then begin
+        FMoverData.SpeedX := FMoverData.SpeedX + FMoverData.FFriction;
+        if FMoverData.SpeedX > 0 then
+          FMoverData.SpeedX := 0;
+      end;
+      if FMoverData.SpeedY > 0 then begin
+        FMoverData.SpeedY := FMoverData.SpeedY - FMoverData.FFriction;
+        if FMoverData.SpeedY < 0 then
+          FMoverData.SpeedY := 0;
+      end;
+      if FMoverData.SpeedY < 0 then begin
+        FMoverData.SpeedY := FMoverData.SpeedY + FMoverData.FFriction;
+        if FMoverData.SpeedY > 0 then
+          FMoverData.SpeedY := 0;
+      end;
+    end;
+    if FMoverData.SpeedX > FMoverData.FMaximumSpeed then
+      FMoverData.SpeedX := FMoverData.FMaximumSpeed;
+    if FMoverData.SpeedY > FMoverData.FMaximumSpeed then
+      FMoverData.SpeedY := FMoverData.FMaximumSpeed;
+    if FMoverData.SpeedX < -FMoverData.FMaximumSpeed then
+      FMoverData.SpeedX := -FMoverData.FMaximumSpeed;
+    if FMoverData.SpeedY < -FMoverData.FMaximumSpeed then
+      FMoverData.SpeedY := -FMoverData.FMaximumSpeed;
+    if FMoverData.SpeedX <> 0 then
+      PositionX := PositionX + FMoverData.SpeedX;
+    if FMoverData.SpeedY <> 0 then
+      PositionY := PositionY + FMoverData.SpeedY;
+  end;
 
     if ( PositionX = FMoverData.fDestinationX ) and ( PositionY = FMoverData.fDestinationY ) then begin
   //          if Not NotifyDestinationReached then Exit;
@@ -2598,19 +2678,37 @@ begin
 
     end;
 
-   if fengine.FIsoPriority then Priority:= Position.Y + ModPriority;
+  if fengine.FIsoPriority then Priority:= Position.Y + ModPriority;
+
+  if fengine.Theater.WrapHorizontal then
+  begin
+    while PositionX < 0 do
+      PositionX := PositionX + fengine.Theater.VirtualWidth;
+    while PositionX > fengine.Theater.VirtualWidth do
+      PositionX := PositionX - fengine.Theater.VirtualWidth;
+  end;
+  if fengine.Theater.WrapVertical then
+  begin
+    while PositionY < 0 do
+      PositionY := PositionY + fengine.Theater.VirtualHeight;
+    while PositionY > fengine.Theater.VirtualHeight do
+      PositionY := PositionY - fengine.Theater.VirtualHeight;
+  end;
 
 end;
 
 
 procedure SE_Sprite.SetAngle(const Value: single);
+var
+  a: single;
 begin
-  FAngle := -Value+90;    // <-- dipende da come è girato lo sprite in partenza
-  //while a < 0 do
-  //  a := a + 360;
-  //while a >= 360 do
-  //  a := a - 360;
- // FAngle := a;
+//  FAngle := -Value+90;    // <-- dipende da come è girato lo sprite in partenza
+  a := Value;
+  while a < 0 do
+    a := a + 360;
+  while a >= 360 do
+    a := a - 360;
+  FAngle := a;
 end;
 procedure SE_Sprite.SetTransparent(const Value: boolean);
 begin
@@ -3394,6 +3492,14 @@ begin
   Update;
 end;
 
+procedure SE_Theater.SetWrapHorizontal(const v: boolean);
+begin
+  fWrapHorizontal := v;
+end;
+procedure SE_Theater.SetWrapVertical(const v: boolean);
+begin
+  fWrapVertical := v;
+end;
 
 procedure SE_Theater.SetVirtualWidth(const v: integer);
 begin
