@@ -2,7 +2,6 @@ unit DSE_theater;
 //{$Define nagscreen}
 {$Define Angle}
 interface
-
 uses
   Windows, Messages, vcl.Graphics, vcl.Controls, vcl.Forms, system.Classes, system.SysUtils, vcl.StdCtrls, vcl.ExtCtrls, strutils,DSE_list,
   DSE_Bitmap, DSE_ThreadTimer, DSE_Misc, DSE_defs,  Generics.Collections ,Generics.Defaults, dse_pathplanner;
@@ -17,6 +16,7 @@ type
   SE_Engine =  class;
   SE_Sprite = class;
   SE_SpriteProgressBar = class;
+  SE_SpritePolygon = class;
 
   SE_TheaterEvent = procedure( Sender: TObject; VirtualBitmap, VisibleBitmap: SE_Bitmap ) of object;
   TCollisionEvent = procedure( Sender: TObject; Sprite1, Sprite2: SE_Sprite ) of object;
@@ -500,6 +500,7 @@ type
     procedure AddSprite(aSprite: SE_Sprite) ;
     function CreateSpriteProgressBar(const Guid: string; posX, posY, Width,Height: integer; aFontName: string;
      aFontColor, aBarColor, aBackColor: TColor; aFontSize: Integer; aText: string; aValue: integer; aTransparent: boolean; aPriority: integer ): SE_SpriteProgressBar;
+    function CreateSpritePolygon(const Guid: string; posX, posY, aColor: Integer; Vertices: string; Filled: Boolean; Priority: Integer): SE_SpritePolygon;
 
 
     procedure Clear;
@@ -539,6 +540,7 @@ type
   private
 
     ProgressBar : Boolean;
+    Polygon : Boolean;
     FBMP, FBMPalpha: SE_Bitmap;
     FBMPCurrentFrame,FBMPCurrentFrameAlpha: SE_Bitmap;
     fchangingFrame: boolean;
@@ -751,7 +753,7 @@ type
   private
   protected
   public
-    Guid: string;
+//    Guid: string;
     Text : String;
     Value : Integer; // percentuale
     BarColor: TColor;
@@ -767,26 +769,20 @@ type
   destructor destroy; override;
   end;
 
- { SE_Spritepolygon = class (SE_Sprite)    + fireworks + thrustmover
+  SE_SpritePolygon = class (SE_Sprite)
   private
+    oldAngle: Single;
+    arPoint, arPointOriginal : array of Tpoint;
+  function GetSizeFromPolygon: TRect;
   protected
   public
-    Guid: string;
-    Text : String;
-    Value : Integer; // percentuale
-    BarColor: TColor;
-    BackColor: TColor;
-    pbHAlignment,pbVAlignment: Integer;
-    lFontName: string;
-    lFontStyle : TFontStyles;
-    lFontSize: Integer;
-    lFontColor: TColor;
-    lFontQuality : TFontQuality;
- // aggiorna il bmp interno ogni volta con fillrect
-  constructor create ( const guid: string; x,y,w,h: integer; aFontName: string; aFontColor, aBarColor, aBackColor: TColor; aFontSize: Integer; aText: string; aValue: integer; aTransparent: boolean );
+    VertexColor : TColor;
+    FFilled : Boolean;
+  constructor create ( const guid: string; x,y, Color: integer; Vertices: string; Filled: boolean; Priority: integer );
   destructor destroy; override;
-  end; }
+  procedure Rotate(Degrees: integer);
 
+  end;
 
   procedure GetLinePoints(X1, Y1, X2, Y2 : Integer; var PathPoints: dse_pathplanner.TPath); overload;
   procedure GetLinePoints(X1, Y1, X2, Y2 : Integer; var PathPoints: TList<TPoint>); overload;
@@ -821,7 +817,10 @@ begin
 end;
 
 var
+  i: integer;
   MutexMove: cardinal;
+  arSin: array[0..360] of single;
+  arCos: array[0..360] of single;
 
 {$R-}
 // ----------------------------------------------------------------------------
@@ -1656,6 +1655,26 @@ begin
   aSpriteProgressBar.Transparent := False;
   Result:= aSpriteProgressBar;
 end;
+function SE_Engine.CreateSpritePolygon(const Guid: string; posX, posY, aColor: Integer; Vertices: string; Filled: Boolean; Priority: Integer): SE_SpritePolygon;
+var
+aSpritePoly: SE_SpritePolygon;
+begin
+
+  aSpritePoly:= SE_SpritePolygon.Create ( Guid, posX, posY, aColor, Vertices, Filled , Priority ) ;
+  aSpritePoly.Theater := FTheater;
+  aSpritePoly.FEngine := self;
+  aSpritePoly.OnDestinationreached := aSpritePoly.iOnDestinationReached ;// aSpriteReachdestination;
+  aSpritePoly.Guid := Guid;
+  aSpritePoly.Priority := Priority;
+
+  lstNewSprites.Add( aSpritePoly );
+  aSpritePoly.Visible := true;
+  aSpritePoly.Transparent := true;
+  Result:= aSpritePoly;
+
+end;
+
+
 procedure SE_Engine.AddSprite(aSprite: SE_Sprite) ;
 begin
   aSprite.Theater := FTheater;
@@ -2709,6 +2728,7 @@ begin
   while a >= 360 do
     a := a - 360;
   FAngle := a;
+
 end;
 procedure SE_Sprite.SetTransparent(const Value: boolean);
 begin
@@ -3065,6 +3085,16 @@ begin
    if Alpha <> 0 then
     fBmpCurrentFrameAlpha.Rotate (fAngle);
   end;
+
+  if SpriteFileName = 'TPolygon'  then begin
+    if  SE_SpritePolygon(Self).oldAngle <> fAngle then begin
+      SE_SpritePolygon(Self).Rotate(Trunc(fAngle) );
+      SE_SpritePolygon(Self).oldAngle := fAngle;
+    end;
+
+  end;
+
+
   if Scale <> 0 then begin
     NewWidth:= trunc (( fBmpCurrentFrame.Width * Scale ) / 100);
     NewHeight:= trunc (( fBmpCurrentFrame.Height * Scale ) / 100);
@@ -3090,10 +3120,7 @@ begin
 end;
 procedure SE_Sprite.Render ( RenderTo: TRenderBitmap );
 var
-
   i,y,X: integer;
-
-
   wTrans: dword;
   aTrgb: Trgb;
   diff,textwidth,diffx,diffy,TextHeight: Integer;
@@ -3102,13 +3129,9 @@ var
   R :Trect;
 begin
 
-    
-
-    if RenderTo = VisibleRender then
-      DestBitmap:= Theater.VisibleBitmap else
-        DestBitmap := Theater.fvirtualBitmap;
-
-
+  if RenderTo = VisibleRender then
+    DestBitmap:= Theater.VisibleBitmap else
+      DestBitmap := Theater.fvirtualBitmap;
 
   X:= DrawingRect.Left ;
   Y:= DrawingRect.top;
@@ -3218,7 +3241,21 @@ begin
       else // left, right ,center normali
         DrawText(fBMPCurrentFrame.Canvas.handle, PChar(SE_SpriteProgressBar(Self).text), length(SE_SpriteProgressBar(Self).Text), R, SE_SpriteProgressBar(Self).pbHAlignment or SE_SpriteProgressBar(Self).pbVAlignment );
 
+  end
+  else if SpriteFileName = 'TPolygon'  then begin
+    fBMPCurrentFrame.Canvas.Pen.Color := SE_SpritePolygon(Self).VertexColor;
+    fBMPCurrentFrame.Canvas.Brush.Color := SE_SpritePolygon(Self).VertexColor;
+
+    fBMPCurrentFrame.Canvas.MoveTo(SE_SpritePolygon(Self).arPoint[0].X + (fBMPCurrentFrame.Width div 2),SE_SpritePolygon(Self).arPoint[0].Y + (fBMPCurrentFrame.Height div 2));
+    for I := 1 to High(SE_SpritePolygon(Self).arPoint) do begin
+      fBMPCurrentFrame.Canvas.LineTo(SE_SpritePolygon(Self).arPoint[i].X + (fBMPCurrentFrame.Width div 2),SE_SpritePolygon(Self).arPoint[i].Y + (fBMPCurrentFrame.Height div 2));
+    end;
+    fBMPCurrentFrame.Canvas.LineTo(SE_SpritePolygon(Self).arPoint[0].X + (fBMPCurrentFrame.Width div 2),SE_SpritePolygon(Self).arPoint[0].Y + (fBMPCurrentFrame.Height div 2));
+    fTransparentForced := True;
+    wTrans := clwhite;
   end;
+
+
 
   if Transparent then begin
 
@@ -3340,7 +3377,142 @@ destructor SE_SpriteProgressBar.Destroy; //--> distrugge la spriteLabel, poi inh
 begin
   inherited;
 end;
+constructor SE_SpritePolygon.create ( const guid: string; x,y, Color: integer; Vertices: string; Filled: boolean; Priority: integer );
+var
+  aPoint : TPoint;
+  ts : TStringList;
+  i: Integer;
+  rectSource,aRect : TRect;
+begin
 
+  ts := TStringList.Create;
+  ts.CommaText := Vertices;
+
+  SetLength( arPoint, ts.Count );
+  SetLength( arPointOriginal, ts.Count );
+  for I := Low ( arPoint) to High( arPoint)  do begin
+    aPoint.X :=  StrToInt( ExtractWordL  ( 1,ts[i],'.' ));
+    aPoint.Y :=  StrToInt( ExtractWordL  ( 2,ts[i],'.' ));
+    arPoint[i] := Point(aPoint.X,aPoint.Y  );
+    arPointOriginal[i]:= Point(aPoint.X,aPoint.Y  );
+  end;
+  ARect := GetSizeFromPolygon;
+
+  Polygon := True;
+  VertexColor := Color;
+  FFilled := Filled;
+
+
+  Destinationreached := true;
+  FAnimated := false ;
+  Self.Guid:= Guid;
+  FMoverData:= SE_SpriteMoverData.Create;
+  FMoverData.FSprite := self;
+  FPositionX:= X;
+  FPositionY:= Y;
+  //FMoverData.Destination := Point(X,Y);
+  fpause    :=false;
+
+  FramesX  := 1;
+  FramesY  := 1;
+  FrameXMin  := 0;
+  FrameXMax  := 0;
+  FAnimationInterval := 1000;
+  fDelay:=0;
+
+
+  FBMP:= SE_Bitmap.Create( aRect.Width , aRect.Height );
+//  FBMP.Canvas.Brush.Style := bsSolid;
+//  FBMP.Canvas.Brush.Color := Barcolor;
+  FBMP.Canvas.FillRect( Rect(0,0,aRect.Width , aRect.Height) );
+  //  FBMP.Assign(bmp);
+  inherited create ( FBMP.Bitmap, guid, 1,1,1000,x,y, true) ;
+  SpriteFileName:= 'TPolygon';
+
+
+  FBMPCurrentFrame:=SE_Bitmap.Create (FBMP.Width div FramesX , FBMP.height div FramesY );
+
+  FBMPalpha :=  SE_Bitmap.Create(FBMP.Width,FBMP.Height);   // crea un bmp alpha comunque
+  FBMPCurrentFramealpha :=  SE_Bitmap.Create(FBMPCurrentFrame.Width,FBMPCurrentFrame.Height);   // crea un bmp alpha comunque
+
+  fBmp.fbitmapAlpha := FBMPalpha.Bitmap ;
+  fBmpCurrentFrame.fbitmapAlpha := FBMPCurrentFrameAlpha.Bitmap ;
+
+  //glielo devo passare già tagliato e poi andrà bene
+    with rectSource do begin
+      Left := 0;
+      Top := 0;
+      Right := ( FBMP.Width div FramesX)-1;
+      Bottom :=( FBMP.Height div FramesY)-1;
+    end;
+
+
+  FBMPCurrentFrame.Bitmap.PixelFormat :=  pf24bit;
+
+  FBMP.CopyRectTo(fBMPCurrentFrame,RectSource.left,RectSource.top,0,0,RectSource.Width+1,RectSource.Height+1,false  , 0 ) ;  //irargb
+
+  FFrameWidth := FBMPCurrentFrame.Width;
+  FFrameHeight := FBMPCurrentFrame.height;
+
+  FOnDestinationReached := iOnDestinationReached ;
+  FOnDestinationReachedPerc := iOnDestinationReachedPerc ;
+  FOnPartialMoveReached := iOnPartialMoveReached ;
+
+
+  Transparent := true;
+
+
+
+end;
+destructor SE_SpritePolygon.destroy;
+begin
+
+  inherited;
+end;
+function SE_SpritePolygon.GetSizeFromPolygon: TRect;
+var
+  i: integer;
+begin
+
+  Result.Left := High( integer );
+  Result.Right := Low( integer );
+  Result.Top := High( integer );
+  Result.Bottom := Low( integer );
+  for i := Low (arPoint) to High (arPoint) do  begin
+    if arPoint[i].X < Result.Left then
+      Result.Left := arPoint[i].X;
+    if arPoint[i].Y < Result.Top then
+      Result.Top := arPoint[i].Y;
+    if arPoint[i].X > Result.Right then
+      Result.Right := arPoint[i].X;
+    if arPoint[i].Y > Result.Bottom then
+      Result.Bottom := arPoint[i].Y;
+  end;
+
+
+
+
+end;
+procedure SE_SpritePolygon.Rotate(Degrees: integer);
+var
+  xSin, xCos: single;
+  i: integer;
+  x, y: integer;
+begin
+  xSin := arSin[Degrees];
+  xCos := arCos[Degrees];
+
+  for i := Low (arPoint) to High (arPoint) do  begin
+    arPoint[i] := arPointOriginal[i];
+  end;
+
+  for i := Low (arPoint) to High (arPoint) do  begin
+    x := Round( arPoint[i].X * xCos - arPoint[i].Y * xSin );
+    y := Round( arPoint[i].Y * xCos + arPoint[i].X * xSin );
+    arPoint[i] := Point( x, y );
+  end;
+
+end;
 
 constructor SE_Theater.Create(Owner: TComponent);
 begin
@@ -4282,6 +4454,10 @@ end;
 
 initialization
   MutexMove:=CreateMutex(nil,false,'move');
+  for i := 0 to 360 do begin
+    arSin[i] := Sin( DegToRad( i ) );
+    arCos[i] := Cos( DegToRad( i ) );
+  end;
 finalization
   CloseHandle(MutexMove)
 
