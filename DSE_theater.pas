@@ -1,6 +1,5 @@
 unit DSE_theater;
 //{$Define nagscreen}
-{$Define Angle}
 interface
 uses
   Windows, Messages, vcl.Graphics, vcl.Controls, vcl.Forms, system.Classes, system.SysUtils, vcl.StdCtrls, vcl.ExtCtrls, strutils,DSE_list,
@@ -3251,6 +3250,7 @@ begin
       fBMPCurrentFrame.Canvas.LineTo(SE_SpritePolygon(Self).arPoint[i].X + (fBMPCurrentFrame.Width div 2),SE_SpritePolygon(Self).arPoint[i].Y + (fBMPCurrentFrame.Height div 2));
     end;
     fBMPCurrentFrame.Canvas.LineTo(SE_SpritePolygon(Self).arPoint[0].X + (fBMPCurrentFrame.Width div 2),SE_SpritePolygon(Self).arPoint[0].Y + (fBMPCurrentFrame.Height div 2));
+    //Transparent := False;
     fTransparentForced := True;
     wTrans := clwhite;
   end;
@@ -3489,6 +3489,8 @@ begin
       Result.Bottom := arPoint[i].Y;
   end;
 
+//  Result.Width := Result.Width + 1;
+//  Result.Height:= Result.Height + 1;
 
 
 
@@ -4061,7 +4063,6 @@ begin
       VisibleBitmap.Canvas.Font.Assign( self.Font );
       VisibleBitmap.Canvas.TextOut( 25, 4, 'Demo version' ) ;
     {$ENDIF NAGSCREEN }
-
    // qui copia da fVisibleBitmap al canvas
   //        DIB_SectionHandle: HBITMAP;
     BitBlt(Canvas.Handle, 0, 0, Width, Height, fVisibleBitmap.Canvas.Handle, 0, 0, SRCCOPY);
@@ -4436,7 +4437,6 @@ begin
   aBitmap.Canvas.FillRect(rect(0, 0, Width , Height ));
 
 // Questo è il render finale
-  {$ifdef angle}
   //Angle:= 45;
   if Angle <> 0 then begin
     Rotated := fVirtualBitmap.Rotate(Angle);
@@ -4445,7 +4445,6 @@ begin
     freeandnil(Rotated);
     Exit;
   end;
-  {$endif angle}
 
   fVirtualBitmap.InternalRender(ABitmap, ABitmapScanline,
   fOffsetX, fOffsetY, fDstX, fDstY, VirtualSource1x, VirtualSource1y, VirtualSourceWidth, VirtualSourceHeight);

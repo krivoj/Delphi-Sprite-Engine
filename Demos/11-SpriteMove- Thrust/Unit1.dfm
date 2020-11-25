@@ -63,15 +63,7 @@ object Form1: TForm1
     IsoPriority = False
     Priority = 1
     Theater = SE_Theater1
-    OnSpriteDestinationReached = SE_Engine1SpriteDestinationReached
     Left = 520
-    Top = 656
-  end
-  object SE_ThreadTimer1: SE_ThreadTimer
-    Enabled = True
-    Interval = 300
-    KeepAlive = True
-    Left = 408
     Top = 656
   end
 end

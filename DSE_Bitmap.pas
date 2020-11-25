@@ -1379,8 +1379,7 @@ begin
           getmem(sxarr, (cx2 - cx1 + 1) * sizeof(integer));
           psx := sxarr;
 
-          for x := cx1 to cx2 do
-          begin
+          for x := cx1 to cx2 do begin
             psx^ := ilimit(trunc( zx*(x-xDst) + xSrc ), 0, fWidth-1);
             inc(psx);
           end;
@@ -1388,8 +1387,7 @@ begin
           getmem(syarr, (cy2 - cy1 + 1) * sizeof(integer));
           psy := syarr;
 
-          for y := cy1 to cy2 do
-          begin
+          for y := cy1 to cy2 do begin
             psy^ := ilimit(trunc( zy*(y-yDst) + ySrc ), 0, fHeight-1);
             inc(psy);
           end;
