@@ -40,21 +40,24 @@ begin
   SE_Engine1.Priority := 1;
 
 
-  Ship := SE_Engine1.CreateSpritePolygon ('ship', se_theater1.Width div 2, se_theater1.Height div 2, claqua,'0.-10,8.10,0.5,-8.10',False,1 );
+  Ship := SE_Engine1.CreateSpritePolygon ('ship', se_theater1.Width div 2, se_theater1.Height div 2, claqua,clBlue, '0.-10,8.10,0.5,-8.10',False,1 );
   Ship.TransparentColor := clWhite;
+  Ship.Filled := True;
 
   Ship.MoverData.UseThrust:= True;
   Ship.MoverData.fThrust := 0;//0.3;
   Ship.MoverData.FFriction := 0.1;
   Ship.MoverData.FMaximumSpeed := 8;
 
-  ShipFire := SE_Engine1.CreateSpritePolygon ('shipfire', se_theater1.Width div 2, se_theater1.Height div 2, clRed,'0.0,4.8,0.13,-4.8',False,1 );
+  ShipFire := SE_Engine1.CreateSpritePolygon ('shipfire', se_theater1.Width div 2, se_theater1.Height div 2, clRed,clYellow,'0.0,4.8,0.13,-4.8',False,1 );
   ShipFire.TransparentColor := clWhite;
 
   ShipFire.MoverData.UseThrust:= True;
   ShipFire.MoverData.fThrust := 0;//0.3;
   ShipFire.MoverData.FFriction := 0.1;
   ShipFire.MoverData.FMaximumSpeed := 8;
+  ShipFire.Filled := True;
+
   ShipFire.Visible := False;
 
   SE_Theater1.Active := True;

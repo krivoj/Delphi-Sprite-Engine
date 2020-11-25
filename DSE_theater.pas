@@ -499,7 +499,7 @@ type
     procedure AddSprite(aSprite: SE_Sprite) ;
     function CreateSpriteProgressBar(const Guid: string; posX, posY, Width,Height: integer; aFontName: string;
      aFontColor, aBarColor, aBackColor: TColor; aFontSize: Integer; aText: string; aValue: integer; aTransparent: boolean; aPriority: integer ): SE_SpriteProgressBar;
-    function CreateSpritePolygon(const Guid: string; posX, posY, aColor: Integer; Vertices: string; Filled: Boolean; Priority: Integer): SE_SpritePolygon;
+    function CreateSpritePolygon(const Guid: string; posX, posY, VertexColor, FillColor: Integer; Vertices: string; Filled: Boolean; Priority: Integer): SE_SpritePolygon;
 
 
     procedure Clear;
@@ -771,13 +771,14 @@ type
   SE_SpritePolygon = class (SE_Sprite)
   private
     oldAngle: Single;
-    arPoint, arPointOriginal : array of Tpoint;
+    arPoint, arPointOriginal, arPointVisual : array of Tpoint;
   function GetSizeFromPolygon: TRect;
   protected
   public
     VertexColor : TColor;
-    FFilled : Boolean;
-  constructor create ( const guid: string; x,y, Color: integer; Vertices: string; Filled: boolean; Priority: integer );
+    FillColor : TColor;
+    Filled : Boolean;
+  constructor create ( const guid: string; x,y, VertexColor,FillColor: integer; Vertices: string; Filled: boolean; Priority: integer );
   destructor destroy; override;
   procedure Rotate(Degrees: integer);
 
@@ -1654,12 +1655,12 @@ begin
   aSpriteProgressBar.Transparent := False;
   Result:= aSpriteProgressBar;
 end;
-function SE_Engine.CreateSpritePolygon(const Guid: string; posX, posY, aColor: Integer; Vertices: string; Filled: Boolean; Priority: Integer): SE_SpritePolygon;
+function SE_Engine.CreateSpritePolygon(const Guid: string; posX, posY, VertexColor, FillColor: Integer; Vertices: string; Filled: Boolean; Priority: Integer): SE_SpritePolygon;
 var
 aSpritePoly: SE_SpritePolygon;
 begin
 
-  aSpritePoly:= SE_SpritePolygon.Create ( Guid, posX, posY, aColor, Vertices, Filled , Priority ) ;
+  aSpritePoly:= SE_SpritePolygon.Create ( Guid, posX, posY, VertexColor, FillColor, Vertices, Filled , Priority ) ;
   aSpritePoly.Theater := FTheater;
   aSpritePoly.FEngine := self;
   aSpritePoly.OnDestinationreached := aSpritePoly.iOnDestinationReached ;// aSpriteReachdestination;
@@ -3243,13 +3244,19 @@ begin
   end
   else if SpriteFileName = 'TPolygon'  then begin
     fBMPCurrentFrame.Canvas.Pen.Color := SE_SpritePolygon(Self).VertexColor;
-    fBMPCurrentFrame.Canvas.Brush.Color := SE_SpritePolygon(Self).VertexColor;
+    fBMPCurrentFrame.Canvas.Brush.Color := SE_SpritePolygon(Self).FillColor;
 
-    fBMPCurrentFrame.Canvas.MoveTo(SE_SpritePolygon(Self).arPoint[0].X + (fBMPCurrentFrame.Width div 2),SE_SpritePolygon(Self).arPoint[0].Y + (fBMPCurrentFrame.Height div 2));
-    for I := 1 to High(SE_SpritePolygon(Self).arPoint) do begin
-      fBMPCurrentFrame.Canvas.LineTo(SE_SpritePolygon(Self).arPoint[i].X + (fBMPCurrentFrame.Width div 2),SE_SpritePolygon(Self).arPoint[i].Y + (fBMPCurrentFrame.Height div 2));
+    if SE_SpritePolygon(Self).Filled then begin
+      fBMPCurrentFrame.Canvas.Brush.Style := bsSolid;
+      fBMPCurrentFrame.Canvas.Polygon(SE_SpritePolygon(Self).arPointVisual);
+    end
+    else begin
+      fBMPCurrentFrame.Canvas.MoveTo(SE_SpritePolygon(Self).arPoint[0].X + (fBMPCurrentFrame.Width div 2),SE_SpritePolygon(Self).arPoint[0].Y + (fBMPCurrentFrame.Height div 2));
+      for I := 1 to High(SE_SpritePolygon(Self).arPoint) do begin
+        fBMPCurrentFrame.Canvas.LineTo(SE_SpritePolygon(Self).arPoint[i].X + (fBMPCurrentFrame.Width div 2),SE_SpritePolygon(Self).arPoint[i].Y + (fBMPCurrentFrame.Height div 2));
+      end;
+      fBMPCurrentFrame.Canvas.LineTo(SE_SpritePolygon(Self).arPoint[0].X + (fBMPCurrentFrame.Width div 2),SE_SpritePolygon(Self).arPoint[0].Y + (fBMPCurrentFrame.Height div 2));
     end;
-    fBMPCurrentFrame.Canvas.LineTo(SE_SpritePolygon(Self).arPoint[0].X + (fBMPCurrentFrame.Width div 2),SE_SpritePolygon(Self).arPoint[0].Y + (fBMPCurrentFrame.Height div 2));
     //Transparent := False;
     fTransparentForced := True;
     wTrans := clwhite;
@@ -3377,7 +3384,7 @@ destructor SE_SpriteProgressBar.Destroy; //--> distrugge la spriteLabel, poi inh
 begin
   inherited;
 end;
-constructor SE_SpritePolygon.create ( const guid: string; x,y, Color: integer; Vertices: string; Filled: boolean; Priority: integer );
+constructor SE_SpritePolygon.create ( const guid: string; x,y, vertexColor,FillColor: integer; Vertices: string; Filled: boolean; Priority: integer );
 var
   aPoint : TPoint;
   ts : TStringList;
@@ -3390,6 +3397,7 @@ begin
 
   SetLength( arPoint, ts.Count );
   SetLength( arPointOriginal, ts.Count );
+  SetLength( arPointVisual, ts.Count );
   for I := Low ( arPoint) to High( arPoint)  do begin
     aPoint.X :=  StrToInt( ExtractWordL  ( 1,ts[i],'.' ));
     aPoint.Y :=  StrToInt( ExtractWordL  ( 2,ts[i],'.' ));
@@ -3397,10 +3405,14 @@ begin
     arPointOriginal[i]:= Point(aPoint.X,aPoint.Y  );
   end;
   ARect := GetSizeFromPolygon;
+  for I := Low ( arPoint) to High( arPoint)  do begin
+    arPointVisual[i]:= Point(arPoint[i].X + aRect.Width div 2,arPoint[i].Y + aRect.Height div 2);
+  end;
 
   Polygon := True;
-  VertexColor := Color;
-  FFilled := Filled;
+  Self.VertexColor := VertexColor;
+  Self.FillColor := FillColor;
+  Self.Filled := Filled;
 
 
   Destinationreached := true;
@@ -3512,6 +3524,9 @@ begin
     x := Round( arPoint[i].X * xCos - arPoint[i].Y * xSin );
     y := Round( arPoint[i].Y * xCos + arPoint[i].X * xSin );
     arPoint[i] := Point( x, y );
+  end;
+  for i := Low (arPoint) to High (arPoint) do  begin
+    arPointVisual[i]:= Point(arPoint[i].X + FBMPCurrentFrame.Width div 2,arPoint[i].Y + FBMPCurrentFrame.Height div 2);
   end;
 
 end;
