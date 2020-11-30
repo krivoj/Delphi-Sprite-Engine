@@ -44,18 +44,18 @@ begin
   Ship.TransparentColor := clWhite;
   Ship.Filled := True;
 
-  Ship.MoverData.UseThrust:= True;
-  Ship.MoverData.fThrust := 0;//0.3;
-  Ship.MoverData.FFriction := 0.1;
-  Ship.MoverData.FMaximumSpeed := 8;
+  Ship.MoverData.MoveMode := Thrust;
+  Ship.MoverData.MoveModeThrust_Thrust := 0;//0.3;
+  Ship.MoverData.MoveModeThrust_Friction := 0.1;
+  Ship.MoverData.MoveModeThrust_MaximumSpeed := 8;
 
   ShipFire := SE_Engine1.CreateSpritePolygon ('shipfire', se_theater1.Width div 2, se_theater1.Height div 2, clRed,clYellow,'0.0,4.8,0.13,-4.8',False,1 );
   ShipFire.TransparentColor := clWhite;
 
-  ShipFire.MoverData.UseThrust:= True;
-  ShipFire.MoverData.fThrust := 0;//0.3;
-  ShipFire.MoverData.FFriction := 0.1;
-  ShipFire.MoverData.FMaximumSpeed := 8;
+  ShipFire.MoverData.MoveMode := Thrust;
+  ShipFire.MoverData.MoveModeThrust_Thrust := 0;//0.3;
+  ShipFire.MoverData.MoveModeThrust_Friction := 0.1;
+  ShipFire.MoverData.MoveModeThrust_MaximumSpeed := 8;
   ShipFire.Filled := True;
 
   ShipFire.Visible := False;
@@ -78,13 +78,13 @@ begin
   end;
 
   if GetAsyncKeyState (VK_UP) < 0 then begin
-    Ship.MoverData.fThrust := 0.3;
-    ShipFire.MoverData.fThrust := 0.3;
+    Ship.MoverData.MoveModeThrust_Thrust := 0.3;
+    ShipFire.MoverData.MoveModeThrust_Thrust := 0.3;
     ShipFire.Visible := True;
   end
   else begin
-    Ship.MoverData.fThrust := 0;
-    ShipFire.MoverData.fThrust := 0;
+    Ship.MoverData.MoveModeThrust_Thrust := 0;
+    ShipFire.MoverData.MoveModeThrust_Thrust := 0;
     ShipFire.Visible := False;
   end;
 

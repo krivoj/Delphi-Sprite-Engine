@@ -10,12 +10,14 @@ uses
 
   Type TGridStyle = (gsNone,gsHex);
   Type TRenderBitmap = ( VirtualRender, VisibleRender );
+  type TSpriteMoveMode = ( Normal, Path, Thrust);
 type
   SE_Theater = class;
   SE_Engine =  class;
   SE_Sprite = class;
   SE_SpriteProgressBar = class;
   SE_SpritePolygon = class;
+
 
   SE_TheaterEvent = procedure( Sender: TObject; VirtualBitmap, VisibleBitmap: SE_Bitmap ) of object;
   TCollisionEvent = procedure( Sender: TObject; Sprite1, Sprite2: SE_Sprite ) of object;
@@ -389,7 +391,7 @@ type
     FDestinationXreach: integer;
     FreachPerc: Integer;
 
-    fWPinterval: Integer;
+    fModeModePath_WPinterval: Integer;
 
     FDestinationCellY: integer;
     FDestinationCellX: integer;
@@ -409,21 +411,24 @@ type
   public
     FSprite: SE_Sprite;
 
-    FFriction: single;
-    FMaximumSpeed: single;
-    fThrust: Single;
-    UseThrust : Boolean;
+    MoveMode : TSpriteMoveMode;
 
-    TotalStep: Integer;
-    curWP: Integer;
-    TWPinterval: Integer;   // ms tra un movepathpoint e l'altro
-    MovePath: TList<TPoint>;
-    UseMovePath: boolean;
+    // Thrust
+    MoveModeThrust_Friction: single;
+    MoveModeThrust_MaximumSpeed: single;
+    MoveModeThrust_Thrust: Single;
+
+    // path
+    MoveModePath_TotalStep: Integer;
+    MoveModePath_CurWP: Integer;
+    MoveModePath_TWPinterval: Integer;   // ms tra un movepathpoint e l'altro
+    MoveModePath_MovePath: TList<TPoint>;
+
 
     constructor Create ; overload;
     destructor Destroy; override;
 
-    property WPinterval: Integer read fWPinterval write setWPinterval;   // ms tra un movepathpoint e l'altro
+    property MoveModePath_WPinterval: Integer read fModeModePath_WPinterval write setWPinterval;   // ms tra un movepathpoint e l'altro
 
     property Destination: Tpoint read GetDestination write SetDestination;
 
@@ -1112,8 +1117,8 @@ begin
 end;
 procedure SE_SpriteMoverData.setWPinterval ( v: Integer );
 begin
-  fWPinterval := v;
-  tWPinterval := v;
+  fModeModePath_WPinterval := v;
+  MoveModePath_tWPinterval := v;
 end;
 procedure SE_SpriteMoverData.SetReachPerc(  perc: integer );
 var
@@ -1141,7 +1146,7 @@ begin
   WaitForSingleObject( MutexMove, INFINITE );
   aPath:= dse_pathplanner.TPath.Create;
   GetLinePoints( FSprite.Position.X,  FSprite.Position.Y, fDestinationX, fDestinationY, aPath) ;
-  TotalStep := aPath.Count;
+  MoveModePath_TotalStep := aPath.Count;
   ts := TStringList.Create;
   ts.CommaText := PartialCommaText;
 
@@ -1188,13 +1193,13 @@ begin
 end;
 constructor SE_SpriteMoverData.create ;
 begin
-  MovePath:= TList<TPoint>.Create ;
+  MoveModePath_MovePath:= TList<TPoint>.Create ;
   lstPartial:= TStringList.Create;
-  curWP := 0;
+  MoveModePath_curWP := 0;
 end;
 destructor SE_SpriteMoverData.Destroy ;
 begin
-  MovePath.Free;
+  MoveModePath_MovePath.Free;
   lstPartial.Free;
 end;
 
@@ -2536,19 +2541,19 @@ begin
   if AutoRotate then
   Angle := AngleOfLine ( position ,  MoverData.Destination );
 
-  if FMoverData.UseMovePath then begin
+  if FMoverData.MoveMode = Path then begin
 
-     if FMoverData.curWP >= FMoverData.MovePath.Count -1 then  begin
-       PositionX := FMoverData.MovePath[       FMoverData.MovePath.Count-1      ].X;
-       PositionY := FMoverData.MovePath[       FMoverData.MovePath.Count-1      ].Y;
-       FMoverData.UseMovePath := False;
-       FMoverData.curWP := 0;//FMoverData.MovePath.Count-1;
+     if FMoverData.MoveModePath_curWP >= FMoverData.MoveModePath_MovePath.Count -1 then  begin
+       PositionX := FMoverData.MoveModePath_MovePath[       FMoverData.MoveModePath_MovePath.Count-1      ].X;
+       PositionY := FMoverData.MoveModePath_MovePath[       FMoverData.MoveModePath_MovePath.Count-1      ].Y;
+       FMoverData.MoveMode := Normal;
+       FMoverData.MoveModePath_curWP := 0;//FMoverData.MovePath.Count-1;
        if NotifyDestinationReached  then
          if Assigned( FOnDestinationReached ) then FOnDestinationReached(  ); // <--- arriva su chi ha fatto l'override
 
 
        if NotifyDestinationReachedPerc  then begin
-         if (FMoverData.curWP * 100) div ( FMoverData.MovePath.Count -1 ) >= FMoverData.reachPerc then begin
+         if (FMoverData.MoveModePath_curWP * 100) div ( FMoverData.MoveModePath_MovePath.Count -1 ) >= FMoverData.reachPerc then begin
           if Assigned(FOnDestinationReachedPerc) then FOnDestinationReachedPerc(   );
          end;
        end;
@@ -2558,19 +2563,19 @@ begin
      end
      else begin
 
-       FMoverData.TWPinterval := FMoverData.TWPinterval - interval;
-       if FMoverData.TWPinterval <= 0 then begin
+       FMoverData.MoveModePath_TWPinterval := FMoverData.MoveModePath_TWPinterval - interval;
+       if FMoverData.MoveModePath_TWPinterval <= 0 then begin
 
-         FMoverData.TWPinterval := FMoverData.WPinterval;
-         FMoverData.curWP := FMoverData.curWP + Round(FMoverData.Speed) ;  // posso andare oltre. per qusto sotto devo fixare
+         FMoverData.MoveModePath_TWPinterval := FMoverData.MoveModePath_WPinterval;
+         FMoverData.MoveModePath_curWP := FMoverData.MoveModePath_curWP + Round(FMoverData.Speed) ;  // posso andare oltre. per qusto sotto devo fixare
 
-         if FMoverData.curWP <= FMoverData.MovePath.Count-1 then begin
-           PositionX := FMoverData.MovePath[FMoverData.curWP].X;
-           PositionY := FMoverData.MovePath[FMoverData.curWP].Y;
+         if FMoverData.MoveModePath_curWP <= FMoverData.MoveModePath_MovePath.Count-1 then begin
+           PositionX := FMoverData.MoveModePath_MovePath[FMoverData.MoveModePath_curWP].X;
+           PositionY := FMoverData.MoveModePath_MovePath[FMoverData.MoveModePath_curWP].Y;
          end
          else begin
-           FMoverData.UseMovePath := False;
-           FMoverData.curWP := 0;//FMoverData.MovePath.Count-1;
+           FMoverData.MoveMode := Normal;
+           FMoverData.MoveModePath_curWP := 0;//FMoverData.MovePath.Count-1;
            if NotifyDestinationReached  then
              if Assigned( FOnDestinationReached ) then FOnDestinationReached(  ); // <--- arriva su chi ha fatto l'override
          end;
@@ -2595,7 +2600,7 @@ begin
     oldx :=  PositionX;
     oldy :=  PositionY;
 
-  if not FMoverData.UseThrust then begin // normal, not thrust
+  if FMoverData.MoveMode = Normal then begin // normal, not thrust or Path
     (*************************************************************************)
     (*                              X                                        *)
     (*************************************************************************)
@@ -2638,7 +2643,7 @@ begin
     if FMoverData.lstPartial.Count > 0 then begin
       dist := AbsDistance( FMoverData.fStartX, FMoverData.fStartY,Position.X,Position.Y);  // quanti pixel ho percorso
       for I := FMoverData.lstPartial.Count -1 downto 0 do begin
-        dist2 := FMoverData.TotalStep *  StrToInt(FMoverData.lstPartial[i]) div 100;       // quanti pixel devo fare per la prossima percentuale
+        dist2 := FMoverData.MoveModePath_TotalStep *  StrToInt(FMoverData.lstPartial[i]) div 100;       // quanti pixel devo fare per la prossima percentuale
         if dist >= dist2  then begin
           FMoverData.Partial := StrToInt(FMoverData.lstPartial[i]);
           FMoverData.lstPartial.Delete(I);
@@ -2648,43 +2653,43 @@ begin
     end;
     ReleaseMutex(MutexMove);
   end
-  else if FMoverData.UseThrust then begin
-    if FMoverData.fThrust > 0 then begin
-      VectorX := FMoverData.fThrust * Cos( Trunc( FixAngle( Angle ) ) * PI / 180 );
-      VectorY := FMoverData.fThrust * Sin( Trunc( FixAngle( Angle ) ) * PI / 180 );
+  else if FMoverData.MoveMode = Thrust then begin
+    if FMoverData.MoveModeThrust_Thrust > 0 then begin
+      VectorX := FMoverData.MoveModeThrust_Thrust * Cos( Trunc( FixAngle( Angle ) ) * PI / 180 );
+      VectorY := FMoverData.MoveModeThrust_Thrust * Sin( Trunc( FixAngle( Angle ) ) * PI / 180 );
       FMoverData.SpeedX := FMoverData.SpeedX + VectorX;
       FMoverData.SpeedY := FMoverData.SpeedY + VectorY;
     end;
-    if (FMoverData.FFriction > 0) and (FMoverData.fThrust <= 0) then begin
+    if (FMoverData.MoveModeThrust_Friction > 0) and (FMoverData.MoveModeThrust_Thrust <= 0) then begin
       if FMoverData.SpeedX > 0 then  begin
-        FMoverData.SpeedX := FMoverData.SpeedX - FMoverData.FFriction;
+        FMoverData.SpeedX := FMoverData.SpeedX - FMoverData.MoveModeThrust_Friction;
         if FMoverData.SpeedX < 0 then
           FMoverData.SpeedX := 0;
       end;
       if FMoverData.SpeedX < 0 then begin
-        FMoverData.SpeedX := FMoverData.SpeedX + FMoverData.FFriction;
+        FMoverData.SpeedX := FMoverData.SpeedX + FMoverData.MoveModeThrust_Friction;
         if FMoverData.SpeedX > 0 then
           FMoverData.SpeedX := 0;
       end;
       if FMoverData.SpeedY > 0 then begin
-        FMoverData.SpeedY := FMoverData.SpeedY - FMoverData.FFriction;
+        FMoverData.SpeedY := FMoverData.SpeedY - FMoverData.MoveModeThrust_Friction;
         if FMoverData.SpeedY < 0 then
           FMoverData.SpeedY := 0;
       end;
       if FMoverData.SpeedY < 0 then begin
-        FMoverData.SpeedY := FMoverData.SpeedY + FMoverData.FFriction;
+        FMoverData.SpeedY := FMoverData.SpeedY + FMoverData.MoveModeThrust_Friction;
         if FMoverData.SpeedY > 0 then
           FMoverData.SpeedY := 0;
       end;
     end;
-    if FMoverData.SpeedX > FMoverData.FMaximumSpeed then
-      FMoverData.SpeedX := FMoverData.FMaximumSpeed;
-    if FMoverData.SpeedY > FMoverData.FMaximumSpeed then
-      FMoverData.SpeedY := FMoverData.FMaximumSpeed;
-    if FMoverData.SpeedX < -FMoverData.FMaximumSpeed then
-      FMoverData.SpeedX := -FMoverData.FMaximumSpeed;
-    if FMoverData.SpeedY < -FMoverData.FMaximumSpeed then
-      FMoverData.SpeedY := -FMoverData.FMaximumSpeed;
+    if FMoverData.SpeedX > FMoverData.MoveModeThrust_MaximumSpeed then
+      FMoverData.SpeedX := FMoverData.MoveModeThrust_MaximumSpeed;
+    if FMoverData.SpeedY > FMoverData.MoveModeThrust_MaximumSpeed then
+      FMoverData.SpeedY := FMoverData.MoveModeThrust_MaximumSpeed;
+    if FMoverData.SpeedX < -FMoverData.MoveModeThrust_MaximumSpeed then
+      FMoverData.SpeedX := -FMoverData.MoveModeThrust_MaximumSpeed;
+    if FMoverData.SpeedY < -FMoverData.MoveModeThrust_MaximumSpeed then
+      FMoverData.SpeedY := -FMoverData.MoveModeThrust_MaximumSpeed;
     if FMoverData.SpeedX <> 0 then
       PositionX := PositionX + FMoverData.SpeedX;
     if FMoverData.SpeedY <> 0 then

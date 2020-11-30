@@ -39,6 +39,8 @@ object Form1: TForm1
     CollisionDelay = 300
     ShowPerformance = True
     OnBeforeVisibleRender = SE_Theater1BeforeVisibleRender
+    WrapHorizontal = False
+    WrapVertical = False
     VirtualWidth = 1200
     Virtualheight = 1920
     TabOrder = 0

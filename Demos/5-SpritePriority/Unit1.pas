@@ -108,9 +108,9 @@ end;
 
 procedure TForm1.SE_CharactersSpriteDestinationReached(ASprite: SE_Sprite);
 begin
-  aSprite.MoverData.MovePath.Reverse ;
+  aSprite.MoverData.MoveModePath_MovePath.Reverse ;
   aSprite.NotifyDestinationReached := True;
-  aSprite.MoverData.UseMovePath := True;
+  aSprite.MoverData.MoveMode := Path;
 
 end;
 
@@ -122,21 +122,21 @@ begin
 
    SpriteGabriel:= SE_Characters.FindSprite('gabriel');
    SpriteShahira:= SE_Characters.FindSprite('shahira');
-  if SpriteGabriel.MoverData.MovePath.Count > 0 then begin
+  if SpriteGabriel.MoverData.MoveModePath_MovePath.Count > 0 then begin
     VirtualBitmap.Canvas.Pen.Color := clSilver;
 
-    VirtualBitmap.Canvas.MoveTo( SpriteGabriel.MoverData.MovePath[0].X,SpriteGabriel.MoverData.MovePath[0].Y );
-    for I := 1 to SpriteGabriel.MoverData.MovePath.Count -1 do begin
-     VirtualBitmap.Canvas.LineTo( SpriteGabriel.MoverData.MovePath[i].X,SpriteGabriel.MoverData.MovePath[i].Y );
+    VirtualBitmap.Canvas.MoveTo( SpriteGabriel.MoverData.MoveModePath_MovePath[0].X,SpriteGabriel.MoverData.MoveModePath_MovePath[0].Y );
+    for I := 1 to SpriteGabriel.MoverData.MoveModePath_MovePath.Count -1 do begin
+     VirtualBitmap.Canvas.LineTo( SpriteGabriel.MoverData.MoveModePath_MovePath[i].X,SpriteGabriel.MoverData.MoveModePath_MovePath[i].Y );
     end;
 
   end;
-  if SpriteShahira.MoverData.MovePath.Count > 0 then begin
+  if SpriteShahira.MoverData.MoveModePath_MovePath.Count > 0 then begin
     VirtualBitmap.Canvas.Pen.Color := clRed;
 
-    VirtualBitmap.Canvas.MoveTo( SpriteShahira.MoverData.MovePath[0].X,SpriteShahira.MoverData.MovePath[0].Y );
-    for I := 1 to SpriteShahira.MoverData.MovePath.Count -1 do begin
-     VirtualBitmap.Canvas.LineTo( SpriteShahira.MoverData.MovePath[i].X,SpriteShahira.MoverData.MovePath[i].Y );
+    VirtualBitmap.Canvas.MoveTo( SpriteShahira.MoverData.MoveModePath_MovePath[0].X,SpriteShahira.MoverData.MoveModePath_MovePath[0].Y );
+    for I := 1 to SpriteShahira.MoverData.MoveModePath_MovePath.Count -1 do begin
+     VirtualBitmap.Canvas.LineTo( SpriteShahira.MoverData.MoveModePath_MovePath[i].X,SpriteShahira.MoverData.MoveModePath_MovePath[i].Y );
     end;
 
   end;
@@ -152,15 +152,15 @@ begin
 
 
 
-   if SpriteGabriel.MoverData.CurWP < SpriteGabriel.MoverData.MovePath.Count -1 then begin
+   if SpriteGabriel.MoverData.MoveModePath_CurWP < SpriteGabriel.MoverData.MoveModePath_MovePath.Count -1 then begin
    SpriteGabriel.FrameY :=  GetIsoDirection ( SpriteGabriel.Position.X, SpriteGabriel.Position.Y,
-                                              SpriteGabriel.MoverData.MovePath [ SpriteGabriel.MoverData.CurWP +1].X ,
-                                              SpriteGabriel.MoverData.MovePath [ SpriteGabriel.MoverData.CurwP +1].Y);
+                                              SpriteGabriel.MoverData.MoveModePath_MovePath [ SpriteGabriel.MoverData.MoveModePath_CurWP +1].X ,
+                                              SpriteGabriel.MoverData.MoveModePath_MovePath [ SpriteGabriel.MoverData.MoveModePath_CurWP +1].Y);
    end;
-   if SpriteShahira.MoverData.CurwP < SpriteShahira.MoverData.MovePath.Count -1 then begin
+   if SpriteShahira.MoverData.MoveModePath_CurWP < SpriteShahira.MoverData.MoveModePath_MovePath.Count -1 then begin
    SpriteShahira.FrameY :=  GetIsoDirection ( SpriteShahira.Position.X, SpriteShahira.Position.Y,
-                                              SpriteShahira.MoverData.MovePath [ SpriteShahira.MoverData.CurWP +1].X ,
-                                              SpriteShahira.MoverData.MovePath [ SpriteShahira.MoverData.CurwP +1].Y);
+                                              SpriteShahira.MoverData.MoveModePath_MovePath [ SpriteShahira.MoverData.MoveModePath_CurWP +1].X ,
+                                              SpriteShahira.MoverData.MoveModePath_MovePath [ SpriteShahira.MoverData.MoveModePath_CurWP +1].Y);
    end;
 
 end;
@@ -176,7 +176,7 @@ begin
    SpriteGabriel:= SE_Characters.FindSprite('gabriel');
    SpriteGabriel.PositionX := 100;
    SpriteGabriel.PositionY := 100;
-   SpriteGabriel.MoverData.MovePath.Clear ;
+   SpriteGabriel.MoverData.MoveModePath_MovePath.Clear ;
 
 
    LastPoint := SpriteGabriel.Position;
@@ -190,7 +190,7 @@ begin
 
      for I := 0 to tmpPath.Count -1 do begin
        Point2:=tmpPath[i];
-       SpriteGabriel.MoverData.MovePath.Add(Point2);
+       SpriteGabriel.MoverData.MoveModePath_MovePath.Add(Point2);
      end;
      LastPoint := Point;
      tmpPath.Free ;
@@ -198,16 +198,16 @@ begin
 
    end;
 
-   SpriteGabriel.MoverData.UseMovePath := True;
+   SpriteGabriel.MoverData.MoveMode := Path;
    SpriteGabriel.MoverData.Speed := 1.0;  // minimum usepath
-   SpriteGabriel.MoverData.WPinterval  := 50; // delay
+   SpriteGabriel.MoverData.MoveModePath_WPinterval  := 50; // delay
    SpriteGabriel.NotifyDestinationReached := True;
 
 
    SpriteShahira:= SE_Characters.FindSprite('shahira');
    SpriteShahira.PositionX := 300;
    SpriteShahira.PositionY := 100;
-   SpriteShahira.MoverData.MovePath.Clear ;
+   SpriteShahira.MoverData.MoveModePath_MovePath.Clear ;
 
 
    LastPoint := SpriteShahira.Position;
@@ -221,7 +221,7 @@ begin
 
      for I := 0 to tmpPath.Count -1 do begin
        Point2:=tmpPath[i];
-       SpriteShahira.MoverData.MovePath.Add(Point2);
+       SpriteShahira.MoverData.MoveModePath_MovePath.Add(Point2);
      end;
      LastPoint := Point;
      tmpPath.Free ;
@@ -229,9 +229,9 @@ begin
 
    end;
 
-   SpriteShahira.MoverData.UseMovePath := True;
+   SpriteShahira.MoverData.MoveMode := Path;
    SpriteShahira.MoverData.Speed := 1.0;  // minimum usepath
-   SpriteShahira.MoverData.WPinterval  := 50;
+   SpriteShahira.MoverData.MoveModePath_WPinterval  := 50;
    SpriteShahira.NotifyDestinationReached := True;
 
 
