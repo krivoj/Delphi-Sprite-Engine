@@ -3086,9 +3086,9 @@ begin
     fBmpCurrentFrameAlpha.Flip(fliph)
   end;
   if fAngle <> 0 then begin
-    fBmpCurrentFrame.Rotate (fAngle);
+    fBmpCurrentFrame.Rotate (-fAngle);
    if Alpha <> 0 then
-    fBmpCurrentFrameAlpha.Rotate (fAngle);
+    fBmpCurrentFrameAlpha.Rotate (-fAngle);
   end;
 
   if SpriteFileName = 'TPolygon'  then begin

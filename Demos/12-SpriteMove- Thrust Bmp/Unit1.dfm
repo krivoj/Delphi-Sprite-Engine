@@ -1,7 +1,7 @@
 object Form1: TForm1
   Left = 0
   Top = 0
-  Caption = 'SE-SpriteMove- Thrust'
+  Caption = 'SE-SpriteMove- Thrust Bmp'
   ClientHeight = 722
   ClientWidth = 1031
   Color = clBtnFace
