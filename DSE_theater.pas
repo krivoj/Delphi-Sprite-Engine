@@ -3046,7 +3046,8 @@ var
 begin
     with rectSource do begin
       Left := FrameX * BMP.Width div FramesX;
-      Top := (FrameY-1) * BMP.Height div FramesY;
+//      Top := (FrameY-1) * BMP.Height div FramesY;
+      Top := (FrameY) * BMP.Height div FramesY;
       Right := (Left + BMP.Width div FramesX)-1;
       Bottom :=( Top + BMP.Height div FramesY)-1;
     end;

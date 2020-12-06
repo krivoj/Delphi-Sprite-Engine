@@ -39,6 +39,7 @@ object Form1: TForm1
     GridHexSmallWidth = 10
     CollisionDelay = 0
     ShowPerformance = False
+    OnAfterVisibleRender = SE_Theater1AfterVisibleRender
     WrapHorizontal = True
     WrapVertical = True
     VirtualWidth = 1200
