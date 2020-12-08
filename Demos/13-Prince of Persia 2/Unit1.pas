@@ -195,11 +195,11 @@ begin
   index :=0;
   Rectangle ('brake.1',2,44,29,FrameHeight,2);
   inc(Index);
-  Rectangle ('brake.2',36,44,20,FrameHeight,2);
+  Rectangle ('brake.2',36,44,21,FrameHeight,2);
   inc(Index);
-  Rectangle ('brake.3',100,44,14,FrameHeight,2);
+  Rectangle ('brake.3',56,44,37,FrameHeight,2);
   inc(Index);
-  Rectangle ('brake.4',151,44,16,FrameHeight,2);
+  Rectangle ('brake.4',96,44,27,FrameHeight,2);
   inc(Index);
   Rectangle ('brake.5',167,44,20,FrameHeight,2);
   inc(Index);
