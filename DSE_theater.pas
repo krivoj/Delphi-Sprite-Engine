@@ -463,6 +463,7 @@ type
     FPixelClick: Boolean;
     FPixelCollision: Boolean;
     fHiddenSpritesMouseMove: Boolean;
+    fHiddenSpritesMouseClick: Boolean;
     FIsoPriority: Boolean;
     FPriority: integer;
     FClickSprites: boolean;
@@ -526,6 +527,7 @@ type
     property PixelClick: boolean read FPixelClick write FPixelClick default false;
     property PixelCollision: boolean read FPixelCollision write FPixelCollision;
     property HiddenSpritesMouseMove: boolean read FHiddenSpritesMouseMove write FHiddenSpritesMouseMove;
+    property HiddenSpritesMouseClick: boolean read FHiddenSpritesMouseClick write FHiddenSpritesMouseClick;
     property IsoPriority: boolean read FIsoPriority write FIsoPriority;
     property Priority: integer read FPriority write SetPriority;
     property Theater: SE_Theater read FTheater write SetTheater;
@@ -1954,17 +1956,17 @@ var
   i: integer;
 begin
   Result:=nil;
-  for i:= 0 to lstSprites.Count -1 do begin
-    if lstSprites [i].Guid  = Guid then
-      begin
-        result:=lstSprites [i];
-        exit;
-      end;
-  end;
   for i:= 0 to lstNewSprites.Count -1 do begin
     if lstNewSprites [i].Guid  = Guid then
       begin
         result:=lstNewSprites [i];
+        exit;
+      end;
+  end;
+  for i:= 0 to lstSprites.Count -1 do begin
+    if lstSprites [i].Guid  = Guid then
+      begin
+        result:=lstSprites [i];
         exit;
       end;
   end;
@@ -3100,16 +3102,7 @@ begin
 
   end;
 
-
-  if Scale <> 0 then begin
-    NewWidth:= trunc (( fBmpCurrentFrame.Width * Scale ) / 100);
-    NewHeight:= trunc (( fBmpCurrentFrame.Height * Scale ) / 100);
-    if (NewWidth > 0) and (newheight > 0) then begin
-      fBmpCurrentFrame.Stretch(NewWidth,NewHeight);
-      if Alpha <> 0 then
-      fBmpCurrentFrameAlpha.Stretch(NewWidth,NewHeight);
-    end;
-  end;
+  // qui Scale
   //if fGrayscaled then fBmpCurrentFrame.GrayScale ;
 
 
@@ -3267,7 +3260,6 @@ begin
     fTransparentForced := True;
     wTrans := clwhite;
   end;
-
 
 
   if Transparent then begin
@@ -4154,7 +4146,7 @@ begin
     end;
     for s := 0 to lstEngines[i].lstSprites.Count - 1 do begin  // da 0 in su per la priority. precedenza a priority più alta
       spr := lstEngines[i].Sprites[s];
-      if spr.Visible then begin
+      if (spr.Visible)  or (  not (spr.Visible) and (lstEngines[i].HiddenSpritesMouseClick) )then begin
         if spr.DrawingRect.Contains ( pt ) then begin
           bmpX:= spr.DrawingRect.Right  - pt.X    ; // <--- sul virtualBitmap
           bmpX:= spr.DrawingRect.Width - bmpX;
@@ -4360,7 +4352,7 @@ begin
       end;
       for s := 0 to lstEngines[i].lstSprites.Count - 1 do begin // da 0 in su per la priority. precedenza a priority più alta. downto solo nel render
         spr := lstEngines[i].Sprites[s];
-        if spr.Visible then begin
+        if (spr.Visible)  or (  not (spr.Visible) and (lstEngines[i].HiddenSpritesMouseClick) )then begin
           if spr.DrawingRect.Contains ( pt ) then begin
             bmpX:= spr.DrawingRect.Right  - pt.X    ; // <--- sul virtualBitmap
             bmpX:= spr.DrawingRect.Width - bmpX;
