@@ -299,9 +299,9 @@ begin
      Sprite:= SE_Characters.FindSprite('gabriel' + IntToStr(i));
      Sprite.SubSprites.Clear ;
 
-     SpriteBuff := SE_SubSprite.create('..\!media\buff1.bmp','buff1',32,0,True,true);
+     SpriteBuff := SE_SubSprite.create('..\!media\buff1.bmp','buff1',32,0,True,true,1);
      Sprite.SubSprites.Add(Spritebuff);
-     SpriteBuff := SE_SubSprite.create('..\!media\buff2.bmp','buff2',50,0,True,true);
+     SpriteBuff := SE_SubSprite.create('..\!media\buff2.bmp','buff2',50,0,True,true,1);
      Sprite.SubSprites.Add(Spritebuff);
 
    end;
@@ -310,9 +310,9 @@ begin
      Sprite:= SE_Characters.FindSprite('shahira' + IntToStr(i));
      Sprite.SubSprites.Clear ;
 
-     SpriteBuff := SE_SubSprite.create('..\!media\buff3.bmp','buff3',32,0,True,true);
+     SpriteBuff := SE_SubSprite.create('..\!media\buff3.bmp','buff3',32,0,True,true,1);
      Sprite.SubSprites.Add(Spritebuff);
-     SpriteBuff := SE_SubSprite.create('..\!media\buff4.bmp','buff4',50,0,True,true);
+     SpriteBuff := SE_SubSprite.create('..\!media\buff4.bmp','buff4',50,0,True,true,1);
      Sprite.SubSprites.Add(Spritebuff);
 
    end;

@@ -248,13 +248,13 @@ begin
 
    SpriteGabriel.SubSprites.Clear ;
 
-   SpriteGabriel.AddSubSprite( '..\!media\buff1.bmp','buff1',32,0,true);
-   SpriteGabriel.AddSubSprite('..\!media\buff2.bmp','buff2',50,0,true);
+   SpriteGabriel.AddSubSprite( '..\!media\buff1.bmp','buff1',32,0,true,1);
+   SpriteGabriel.AddSubSprite('..\!media\buff2.bmp','buff2',50,0,true,1);
 
    SpriteShahira.SubSprites.Clear ;
 
-   SpriteShahira.AddSubSprite( '..\!media\buff3.bmp','buff1',32,0,true);
-   SpriteShahira.AddSubSprite('..\!media\buff4.bmp','buff2',50,0,true);
+   SpriteShahira.AddSubSprite( '..\!media\buff3.bmp','buff1',32,0,true,1);
+   SpriteShahira.AddSubSprite('..\!media\buff4.bmp','buff2',50,0,true,1);
 
 
 end;

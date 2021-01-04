@@ -200,6 +200,7 @@ object Form1: TForm1
     ClickSprites = False
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 0
     Theater = SE_Theater1
@@ -210,6 +211,7 @@ object Form1: TForm1
     PixelClick = True
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = True
     Priority = 1
     Theater = SE_Theater1
@@ -230,6 +232,7 @@ object Form1: TForm1
     ClickSprites = False
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 1
     Theater = SE_Theater1

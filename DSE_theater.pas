@@ -44,6 +44,7 @@ type
   protected
   public
     lBmp: SE_Bitmap;
+    lPriority : Integer;
     lTransparent: boolean;
     lX : Integer;
     lY : Integer;
@@ -52,8 +53,8 @@ type
     stag: string;
     LifeSpan: Integer;
     dead: Boolean;
-  constructor create (bmpFilename,Guid:string; x,y: integer;  visible,Transparent: boolean);overload;
-  constructor create (bmp:SE_Bitmap; Guid:string;x,y: integer; visible,Transparent: boolean);overload;
+  constructor create (bmpFilename,Guid:string; x,y: integer;  visible,Transparent: boolean; priority: integer);overload;
+  constructor create (bmp:SE_Bitmap; Guid:string;x,y: integer; visible,Transparent: boolean; priority: integer);overload;
   destructor Destroy;override;
   end;
 
@@ -676,8 +677,8 @@ type
     procedure SetPositionCell(const Value: TPoint);
     
     function FindSubSprite ( Guid : string): SE_SubSprite;
-    procedure AddSubSprite ( const FileName, Guid: string; posX, posY: integer; const TransparentSprite: boolean);overload; virtual;
-    procedure AddSubSprite ( const bmp: SE_Bitmap; Guid: string; posX, posY: integer; const TransparentSprite: boolean);overload; virtual;
+    procedure AddSubSprite ( const FileName, Guid: string; posX, posY: integer; const TransparentSprite: boolean; priority: integer);overload; virtual;
+    procedure AddSubSprite ( const bmp: SE_Bitmap; Guid: string; posX, posY: integer; const TransparentSprite: boolean; priority: integer);overload; virtual;
 
     procedure DeleteSubSprite ( Guid : string);
     procedure RemoveAllSubSprites;
@@ -1067,8 +1068,9 @@ destructor SE_SpriteLabel.Destroy;
 begin
   inherited;
 end;
-constructor SE_SubSprite.create (bmpFilename,Guid:string; x,y: integer; visible,Transparent: boolean);
+constructor SE_SubSprite.create (bmpFilename,Guid:string; x,y: integer; visible,Transparent: boolean; priority: integer);
 begin
+    lPriority := priority;
     lTransparent:= Transparent;
     lX := x;
     lY := y;
@@ -1079,8 +1081,9 @@ begin
     stag:= Guid;
     LifeSpan := 0;
 end;
-constructor SE_SubSprite.create (bmp:SE_Bitmap;Guid:string; x,y: integer; visible,transparent: boolean);
+constructor SE_SubSprite.create (bmp:SE_Bitmap;Guid:string; x,y: integer; visible,transparent: boolean; priority: integer);
 begin
+    lPriority := priority;
     lTransparent:= Transparent;
     lX := x;
     lY := y;
@@ -2778,20 +2781,32 @@ begin
     end;
   end;
 end;
-procedure SE_Sprite.AddSubSprite ( const FileName, Guid: string; posX, posY: integer; const TransparentSprite: boolean);
+procedure SE_Sprite.AddSubSprite ( const FileName, Guid: string; posX, posY: integer; const TransparentSprite: boolean; priority: integer);
 var
   aSubSprite : SE_SubSprite;
 begin
-  aSubSprite := SE_SubSprite.create( FileName, Guid, PosX, PosY, True,TransparentSprite );
+  aSubSprite := SE_SubSprite.create( FileName, Guid, PosX, PosY, True,TransparentSprite ,priority);
   lstSubSprites.Add( aSubSprite );
+  lstSubSprites.sort(TComparer<SE_SubSprite>.Construct(
+  function (const L, R: SE_SubSprite): integer
+  begin
+    Result := L.lPriority - R.lPriority;
+  end
+ ));
 end;
 
-procedure SE_Sprite.AddSubSprite ( const bmp: SE_Bitmap; Guid: string; posX, posY: integer; const TransparentSprite: boolean);
+procedure SE_Sprite.AddSubSprite ( const bmp: SE_Bitmap; Guid: string; posX, posY: integer; const TransparentSprite: boolean; priority: integer);
 var
   aSubSprite : SE_SubSprite;
 begin
-  aSubSprite := SE_SubSprite.create( bmp, Guid, PosX, PosY, True,TransparentSprite );
+  aSubSprite := SE_SubSprite.create( bmp, Guid, PosX, PosY, True,TransparentSprite,priority );
   lstSubSprites.Add( aSubSprite );
+  lstSubSprites.sort(TComparer<SE_SubSprite>.Construct(
+  function (const L, R: SE_SubSprite): integer
+  begin
+    Result := L.lPriority - R.lPriority;
+  end
+ ));
 end;
 
 procedure SE_Sprite.RemoveAllSubSprites ;
@@ -3191,13 +3206,13 @@ begin
       SetBkMode(fBMPCurrentFrame.Canvas.Handle,lstLabels.Items[i].lTransparent ); // 1= transparent ,2= OPAQUE
 
 
-      if lstLabels.Items[i].lAlignment = 5 then begin // 5 è il mio centro speciale
+      if lstLabels.Items[i].lAlignment = dt_XCenter then begin // 5 è il mio centro speciale
         textWidth := fBMPCurrentFrame.Canvas.TextWidth(lstLabels.Items[i].lText);
         R.Left := R.Left - (textWidth div 2);
         R.Width := textwidth;
         DrawText(fBMPCurrentFrame.Canvas.handle, PChar(lstLabels.Items[i].lText), length(lstLabels.Items[i].lText), R, dt_wordbreak or dt_Center  );
       end
-      else if lstLabels.Items[i].lAlignment = 7 then begin // 7 a X a destra
+      else if lstLabels.Items[i].lAlignment = dt_XRight then begin // 7 a X a destra
         textWidth := fBMPCurrentFrame.Canvas.TextWidth(lstLabels.Items[i].lText);
         R.Left := R.Left - textWidth;
         R.Width := textwidth;
