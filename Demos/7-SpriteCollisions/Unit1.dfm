@@ -38,6 +38,8 @@ object Form1: TForm1
     GridHexSmallWidth = 10
     CollisionDelay = 300
     ShowPerformance = True
+    WrapHorizontal = False
+    WrapVertical = False
     VirtualWidth = 1200
     Virtualheight = 1920
     TabOrder = 0
@@ -172,6 +174,7 @@ object Form1: TForm1
     ClickSprites = False
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 0
     Theater = SE_Theater1
@@ -181,6 +184,7 @@ object Form1: TForm1
   object SE_Characters: SE_Engine
     PixelCollision = True
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = True
     Priority = 1
     Theater = SE_Theater1

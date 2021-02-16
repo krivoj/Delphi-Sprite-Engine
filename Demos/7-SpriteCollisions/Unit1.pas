@@ -76,6 +76,8 @@ begin
   SpriteTree := SE_Characters.CreateSprite('..\!media\tree.bmp','tree',{framesX}2,{framesY}1,{Delay}5,{X}250,{Y}250,{transparent}true,1);
   SpriteTree.ModPriority := 170;
 
+  SE_Characters.CreateSprite('..\!media\barrel.bmp','barrel',{framesX}1,{framesY}1,{Delay}2000,{X}500,{Y}300,{transparent}true,1);
+
   Randomize;
 
 end;
@@ -107,7 +109,7 @@ end;
 
 procedure TForm1.SE_Theater1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-  SE_Theater1.Angle:= SE_Theater1.Angle+1;
+  //SE_Theater1.Angle:= SE_Theater1.Angle+1;
 
 end;
 

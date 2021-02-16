@@ -57,12 +57,12 @@ begin
   SE_Characters.Priority := 1;
 
 
-  Background:= SE_Background.CreateSprite('..\!media\back1.bmp','background',{framesX}1,{framesY}1,{Delay}0,{X}0,{Y}0,{transparent}false,0);
+  Background:= SE_Background.CreateSprite('..\!media\nwn2.bmp','background',{framesX}1,{framesY}1,{Delay}0,{X}0,{Y}0,{transparent}false,0);
   Background.Position := Point( Background.FrameWidth div 2 , Background.FrameHeight div 2 );
 
   SE_Theater1.Active := True;
 
-  SE_Arrows.CreateSprite('..\!media\_pivots #10883.bmp','xxx',{framesX}16,{framesY}8,{Delay}100,{X}100,{Y}560,{transparent}true,1);
+  SE_Arrows.CreateSprite('..\!media\angel.bmp','xxx',{framesX}1,{framesY}1,{Delay}100,{X}300,{Y}360,{transparent}true,1);
 
 
 

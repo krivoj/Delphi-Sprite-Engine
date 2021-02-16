@@ -77,6 +77,7 @@ begin
   gabriel.Free;
   shahira.Free;
 
+  SE_Characters.CreateSprite('..\!media\barrel.bmp','barrel',{framesX}1,{framesY}1,{Delay}2000,{X}500,{Y}300,{transparent}true,1);
   Randomize;
 
 end;

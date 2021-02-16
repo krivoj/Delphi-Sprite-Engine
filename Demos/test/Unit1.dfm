@@ -29,13 +29,13 @@ object Form1: TForm1
     BackColor = clBlack
     AnimationInterval = 20
     GridInfoCell = False
-    GridVisible = False
+    GridVisible = True
     GridColor = clSilver
-    GridCellWidth = 40
-    GridCellHeight = 30
-    GridCellsX = 30
+    GridCellWidth = 80
+    GridCellHeight = 80
+    GridCellsX = 20
     GridCellsY = 20
-    GridHexSmallWidth = 10
+    GridHexSmallWidth = 40
     CollisionDelay = 0
     ShowPerformance = False
     WrapHorizontal = False
@@ -144,6 +144,7 @@ object Form1: TForm1
     ClickSprites = False
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 0
     Theater = SE_Theater1
@@ -153,6 +154,7 @@ object Form1: TForm1
   object SE_Characters: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 1
     Theater = SE_Theater1
@@ -162,6 +164,7 @@ object Form1: TForm1
   object SE_Arrows: SE_Engine
     PixelCollision = False
     HiddenSpritesMouseMove = False
+    HiddenSpritesMouseClick = False
     IsoPriority = False
     Priority = 0
     Theater = SE_Theater1
