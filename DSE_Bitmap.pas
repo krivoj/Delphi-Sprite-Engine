@@ -49,6 +49,7 @@ type
     fRowLen: integer;
     BlendMode: SE_BlendMode;
     constructor Create(); overload;
+    constructor Create(aWidth, aHeight: integer; aColor:Tcolor); overload;
     constructor Create(aWidth, aHeight: integer); overload;
     constructor Create(const FileName: string); overload;
     constructor Create(image: SE_Bitmap); overload;
@@ -197,6 +198,14 @@ begin
   Allocate(aWidth, aHeight);
 end;
 
+constructor SE_Bitmap.Create(aWidth, aHeight: integer; aColor: TColor);
+begin
+  Create();
+  Allocate(aWidth, aHeight);
+  Bitmap.Canvas.Brush.Color := aColor;
+  Bitmap.Canvas.Brush.Style := bsSolid;
+  Bitmap.Canvas.FillRect(rect(0,0,bitmap.Width,bitmap.Height));
+end;
 constructor SE_Bitmap.Create(const FileName: string);
 begin
   Create();

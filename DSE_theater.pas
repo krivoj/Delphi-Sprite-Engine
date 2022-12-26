@@ -649,6 +649,7 @@ type
     DestinationReached : boolean;
     DestinationReachedPerc : boolean;
 
+    iTag,iTag2,iTag3 : integer;
     sTag : string;
     CollisionIgnore: Boolean;
     MouseX, MouseY : integer; // coordinate del mouse attuali su questo SE_Sprite
