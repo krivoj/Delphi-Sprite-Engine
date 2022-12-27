@@ -507,7 +507,10 @@ type
     function CreateSpriteProgressBar(const Guid: string; posX, posY, Width,Height: integer; aFontName: string;
      aFontColor, aBarColor, aBackColor: TColor; aFontSize: Integer; aText: string; aValue: integer; aTransparent: boolean; aPriority: integer ): SE_SpriteProgressBar;
     function CreateSpritePolygon(const Guid: string; posX, posY, VertexColor, FillColor: Integer; Vertices: string; Filled: Boolean; Priority: Integer): SE_SpritePolygon;
-
+    function CreateLblSprite(const aText:string; const Guid: string; posX, posY: integer;
+                             const FontName: string; const FontStyle :TFontStyles; const FontSize: Integer; const FontColor: TColor;
+                             const BackColor: TColor; const Alignment: Integer; BkMode: Integer; aTransColor: Integer; ForceTrans:boolean;
+                             const Transparent: boolean; const aPriority: integer  ): SE_Sprite;
 
     procedure Clear;
     procedure RemoveAllSprites; overload;
@@ -1684,7 +1687,48 @@ begin
   Result:= aSpritePoly;
 
 end;
+function SE_Engine.CreateLblSprite(const aText:string; const Guid: string; posX, posY: integer;
+                             const FontName: string; const FontStyle :TFontStyles; const FontSize: Integer; const FontColor: TColor;
+                             const BackColor: TColor; const Alignment: integer; BkMode: Integer; aTransColor: Integer; ForceTrans:boolean;
+                             const Transparent: boolean; const aPriority: integer  ): SE_Sprite;
+var
+  SeBmp : SE_bitmap;
+  aSize : TSize;
+  R: TRect;
+  aSprite : SE_Sprite;
+begin
+  SeBmp := SE_bitmap.Create ( 20,20,BackColor );
+  SeBmp.Bitmap.Canvas.Font.Name := FontName;
+  SeBmp.Bitmap.Canvas.Font.Style := FontStyle;
+  SeBmp.Bitmap.Canvas.Font.Size := FontSize;
+  SeBmp.Bitmap.Canvas.Font.Color := FontColor;
+  aSize := SeBmp.Bitmap.Canvas.TextExtent( aText );
+  SeBmp.Resize( aSize.Width, aSize.Height, BackColor );
 
+  SetBkMode(SeBmp.Bitmap.Canvas.Handle, bkMode ); // 1= transparent ,2= OPAQUE
+  R.Left := 0;
+  R.Top := 0;
+  R.Width := SeBmp.Width;
+  R.Right := SeBmp.Width-1;
+  R.Height := SeBmp.Height;
+  R.Bottom := SeBmp.Height-1;
+
+  if Alignment = dt_XCenter then begin // 5 è il mio centro speciale
+    R.Left := aSize.Width - (aSize.Width div 2);
+    R.Width := aSize.Width;
+    DrawText(SeBmp.Bitmap.Canvas.handle, PChar(aText), length(aText), R, dt_wordbreak or dt_Center  );
+  end
+  else if Alignment = dt_XRight then begin // 7 a X a destra
+    DrawText(SeBmp.Bitmap.Canvas.handle, PChar(aText), length(aText), R, dt_wordbreak or DT_RIGHT  );
+  end
+  else begin
+    DrawText(SeBmp.Bitmap.Canvas.handle, PChar(aText), length(aText), R, Alignment  );
+  end;
+
+  aSprite := CreateSprite( SeBmp.Bitmap, Guid,1,1,1000, posX, posY, Transparent, aPriority);
+  aSprite.TransparentColor := aTransColor;
+  aSprite.TransparentForced:= True;
+end;
 
 procedure SE_Engine.AddSprite(aSprite: SE_Sprite) ;
 begin
