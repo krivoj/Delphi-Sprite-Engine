@@ -512,6 +512,10 @@ type
                              const BackColor: TColor; const Alignment: Integer; BkMode: Integer; aTransColor: Integer; ForceTrans:boolean;
                              const Transparent: boolean; const aPriority: integer  ): SE_Sprite;
 
+    function CreateLblTooltipSprite(const aText:string; const Guid: string; posX, posY: integer;
+                             const FontName: string; const FontStyle :TFontStyles; const FontSize: Integer; const FontColor: TColor;
+                             const BackColor: TColor; const Alignment: Integer; BkMode: Integer; aTransColor: Integer; ForceTrans:boolean;
+                             const Transparent: boolean; const aPriority: integer ; R:TRect ): SE_Sprite;
     procedure Clear;
     procedure RemoveAllSprites; overload;
     procedure RemoveAllSprites ( Name:string ); overload;
@@ -1687,6 +1691,39 @@ begin
   Result:= aSpritePoly;
 
 end;
+function SE_Engine.CreateLblTooltipSprite(const aText:string; const Guid: string; posX, posY: integer;
+                             const FontName: string; const FontStyle :TFontStyles; const FontSize: Integer; const FontColor: TColor;
+                             const BackColor: TColor; const Alignment: integer; BkMode: Integer; aTransColor: Integer; ForceTrans:boolean;
+                             const Transparent: boolean; const aPriority: integer; R:TRect  ): SE_Sprite;
+var
+    bmp: SE_Bitmap;
+    aSize: TSize;
+    h: Integer;
+begin
+
+  bmp:= SE_Bitmap.Create (R.Width,R.Height,BackColor);
+  Bmp.Bitmap.Canvas.Font.Name := FontName;
+  Bmp.Bitmap.Canvas.Font.Style := FontStyle;
+  Bmp.Bitmap.Canvas.Font.Size := FontSize;
+  Bmp.Bitmap.Canvas.Font.Color := FontColor;
+
+  SetBkMode(Bmp.Bitmap.Canvas.Handle, bkMode ); // 1= transparent ,2= OPAQUE
+  R.Left := 0;
+  R.Top := 0;
+  R.Width := Bmp.Width;
+  R.Right := Bmp.Width-1;
+  R.Height := Bmp.Height;
+  R.Bottom := Bmp.Height-1;
+
+  h:=DrawText(bmp.Canvas.handle, PChar(aText), length(aText), R, dt_wordbreak or Alignment or dt_vcenter or DT_CALCRECT);
+  DrawText(bmp.Canvas.handle, PChar(aText), length(aText), R, dt_wordbreak or Alignment or dt_vcenter);
+  bmp.Resize(R.Width,R.Height,BackColor);
+
+  Result := CreateSprite( Bmp.Bitmap, Guid,1,1,1000, posX, posY, Transparent, aPriority);
+  Result.TransparentColor := aTransColor;
+  Result.TransparentForced:= True;
+
+end;
 function SE_Engine.CreateLblSprite(const aText:string; const Guid: string; posX, posY: integer;
                              const FontName: string; const FontStyle :TFontStyles; const FontSize: Integer; const FontColor: TColor;
                              const BackColor: TColor; const Alignment: integer; BkMode: Integer; aTransColor: Integer; ForceTrans:boolean;
@@ -1695,7 +1732,6 @@ var
   SeBmp : SE_bitmap;
   aSize : TSize;
   R: TRect;
-  aSprite : SE_Sprite;
 begin
   SeBmp := SE_bitmap.Create ( 20,20,BackColor );
   SeBmp.Bitmap.Canvas.Font.Name := FontName;
@@ -1725,9 +1761,9 @@ begin
     DrawText(SeBmp.Bitmap.Canvas.handle, PChar(aText), length(aText), R, Alignment  );
   end;
 
-  aSprite := CreateSprite( SeBmp.Bitmap, Guid,1,1,1000, posX, posY, Transparent, aPriority);
-  aSprite.TransparentColor := aTransColor;
-  aSprite.TransparentForced:= True;
+  Result := CreateSprite( SeBmp.Bitmap, Guid,1,1,1000, posX, posY, Transparent, aPriority);
+  Result.TransparentColor := aTransColor;
+  Result.TransparentForced:= True;
 end;
 
 procedure SE_Engine.AddSprite(aSprite: SE_Sprite) ;
@@ -3463,6 +3499,11 @@ begin
     arPointOriginal[i]:= Point(aPoint.X,aPoint.Y  );
   end;
   ARect := GetSizeFromPolygon;
+  if ARect.Width = 0 then
+    ARect.Width := 1;
+  if ARect.height = 0 then
+    ARect.height := 1;
+
   for I := Low ( arPoint) to High( arPoint)  do begin
     arPointVisual[i]:= Point(arPoint[i].X + aRect.Width div 2,arPoint[i].Y + aRect.Height div 2);
   end;
