@@ -2851,7 +2851,7 @@ begin
 end;
 function SE_Sprite.AddSubSpriteCentered ( const FileName, Guid: string; const TransparentSprite: boolean; priority,lifespan: integer):SE_SubSprite;
 begin
-  AddSubSprite( FileName, Guid, FrameWidth div 2 , FrameHeight div 2,  TransparentSprite, priority,lifespan  );
+  AddSubSprite( FileName, Guid, FrameWidth div 2 - bmp.Width div 2 , FrameHeight div 2 -  bmp.Height div 2,  TransparentSprite, priority,lifespan  );
 end;
 function SE_Sprite.AddSubSprite ( const bmp: SE_Bitmap; Guid: string; posX, posY: integer; const TransparentSprite: boolean; priority,lifespan: integer):SE_SubSprite;
 var
@@ -2869,7 +2869,7 @@ begin
 end;
 function SE_Sprite.AddSubSpriteCentered ( const bmp: SE_Bitmap; Guid: string; const TransparentSprite: boolean; priority,lifespan: integer):SE_SubSprite;
 begin
-  AddSubSprite( Bmp, Guid, FrameWidth div 2 , FrameHeight div 2,  TransparentSprite, priority,lifespan  );
+  AddSubSprite( Bmp, Guid, FrameWidth div 2 - bmp.Width div 2 , FrameHeight div 2 -  bmp.Height div 2 ,  TransparentSprite, priority,lifespan  );
 end;
 
 procedure SE_Sprite.RemoveAllSubSprites ;
@@ -3216,6 +3216,7 @@ begin
    for I := 0 to lstSubSprites.Count -1 do begin
       if lstSubSprites.Items [i].LifeSpan > 0 then  begin
         lstSubSprites.Items [i].LifeSpan := lstSubSprites.Items [i].LifeSpan -  FTheater.thrdAnimate.Interval ;
+   //     lstSubSprites.Items[i].lBmp.Canvas.TextOut(0,0,IntToStr(lstSubSprites.Items [i].LifeSpan));
         if lstSubSprites.Items [i].LifeSpan <= 0 then begin
            lstSubSprites.Items [i].Dead := true;
         end;
@@ -3227,6 +3228,7 @@ begin
                               lstSubSprites [i].lx,lstSubSprites [i].ly,
                               lstSubSprites [i].lBmp.Width , lstSubSprites [i].lBmp.Height ,
                               lstSubSprites [i].ltransparent, lstSubSprites [i].lBmp.Bitmap.Canvas.Pixels [0,0]);
+      //  lstSubSprites.Items[i].lBmp.Canvas.TextOut(0,0,IntToStr(lstSubSprites.Items [i].LifeSpan));
     end;
    end;
   // fine gestione subsprites
@@ -3250,6 +3252,7 @@ begin
       fBMPCurrentFrame.Canvas.Font.Size := lstLabels.Items[i].lFontSize;
       fBMPCurrentFrame.Canvas.Font.Style := lstLabels.Items[i].lFontStyle;
       fBMPCurrentFrame.Canvas.Font.Quality := lstLabels.Items[i].lFontQuality;
+
   //      fBMPCurrentFrame.Canvas.Brush.Style := lstLabels.Items[i].lBrushStyle;// bsClear;
 
 //      if lstLabels.Items[i].lTransparent <> 1 then begin
@@ -3363,6 +3366,7 @@ begin
   if fGrayscaled then fBmpCurrentFrame.GrayScale ;
 
    fBmpCurrentFrame.fbitmapAlpha := FBMPCurrentFrameAlpha.Bitmap ;
+   //fBmpCurrentFrame.Canvas.TextOut(2,0,IntToStr(LifeSpan));
    fBmpCurrentFrame.CopyRectTo( DestBitmap,0,0,X,Y,fBmpCurrentFrame.Width+1, fBmpCurrentFrame.height+1,Transparent,wtrans ) ;
 
 
