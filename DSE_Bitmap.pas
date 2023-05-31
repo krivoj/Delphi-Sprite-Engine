@@ -879,7 +879,7 @@ begin
 
      aTRGB:= DSE_Misc.TColor2TRGB (wtrans);
 
-    SrcX:=0;
+    SrcX:=0;  // arbitrario
     SrcY:=0;
    // DstX:= DrawingRect.Left ;
    // DstY:= DrawingRect.Top;

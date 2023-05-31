@@ -5,8 +5,8 @@ uses
   Windows, Messages, vcl.Graphics, vcl.Controls, vcl.Forms, system.Classes, system.SysUtils, vcl.StdCtrls, vcl.ExtCtrls, strutils,DSE_list,
   DSE_Bitmap, DSE_ThreadTimer, DSE_Misc, DSE_defs,  Generics.Collections ,Generics.Defaults, dse_pathplanner;
 
-  const dt_XCenter = 5;
-  const dt_XRight = 7;
+  const dt_XCenter = 120;
+  const dt_XRight = 121;
 
   Type TGridStyle = (gsNone,gsHex);
   Type TRenderBitmap = ( VirtualRender, VisibleRender );
@@ -53,8 +53,8 @@ type
     stag: string;
     LifeSpan: Integer;
     dead: Boolean;
-  constructor create (bmpFilename,Guid:string; x,y: integer;  visible,Transparent: boolean; priority: integer);overload;
-  constructor create (bmp:SE_Bitmap; Guid:string;x,y: integer; visible,Transparent: boolean; priority: integer);overload;
+  constructor create (bmpFilename,Guid:string; x,y: integer;  visible,Transparent: boolean; priority,alifespan: integer);overload;
+  constructor create (bmp:SE_Bitmap; Guid:string;x,y: integer; visible,Transparent: boolean; priority,alifespan: integer);overload;
   destructor Destroy;override;
   end;
 
@@ -452,9 +452,6 @@ type
   SE_Engine = class( TComponent )
   private
     lstSprites: TObjectList<SE_Sprite>;
-    lstNewSprites: TObjectList<SE_Sprite>;
-
-
 
     FOnCollision: TCollisionEvent;
     FOnSpriteDestinationReached: SE_EngineEvent;
@@ -468,7 +465,6 @@ type
     FIsoPriority: Boolean;
     FPriority: integer;
     FClickSprites: boolean;
-    FSortNeeded: boolean;
     FrenderBitmap: TRenderBitmap;
 
     lstEngines: TObjectList<SE_Engine>;
@@ -515,7 +511,7 @@ type
     function CreateLblTooltipSprite(const aText:string; const Guid: string; posX, posY: integer;
                              const FontName: string; const FontStyle :TFontStyles; const FontSize: Integer; const FontColor: TColor;
                              const BackColor: TColor; const Alignment: Integer; BkMode: Integer; aTransColor: Integer; ForceTrans:boolean;
-                             const Transparent: boolean; const aPriority: integer ; R:TRect ): SE_Sprite;
+                             const Transparent: boolean; const aPriority: integer ; var R:TRect ): SE_Sprite;
     procedure Clear;
     procedure RemoveAllSprites; overload;
     procedure RemoveAllSprites ( Name:string ); overload;
@@ -683,10 +679,12 @@ type
     procedure Render(RenderTo: TRenderBitmap);  virtual;
 
     procedure SetPositionCell(const Value: TPoint);
-    
+
     function FindSubSprite ( Guid : string): SE_SubSprite;
-    procedure AddSubSprite ( const FileName, Guid: string; posX, posY: integer; const TransparentSprite: boolean; priority: integer);overload; virtual;
-    procedure AddSubSprite ( const bmp: SE_Bitmap; Guid: string; posX, posY: integer; const TransparentSprite: boolean; priority: integer);overload; virtual;
+    function AddSubSprite ( const FileName, Guid: string; posX, posY: integer; const TransparentSprite: boolean; priority,lifespan: integer):SE_SubSprite overload; virtual;
+    function AddSubSprite ( const bmp: SE_Bitmap; Guid: string; posX, posY: integer; const TransparentSprite: boolean; priority,lifespan: integer):SE_SubSprite overload; virtual;
+    function AddSubSpriteCentered ( const bmp: SE_Bitmap; Guid: string; const TransparentSprite: boolean; priority,lifespan: integer):SE_SubSprite overload; virtual;
+    function AddSubSpriteCentered ( const FileName, Guid: string; const TransparentSprite: boolean; priority,lifespan: integer):SE_SubSprite overload; virtual;
 
     procedure DeleteSubSprite ( Guid : string);
     procedure RemoveAllSubSprites;
@@ -1076,7 +1074,7 @@ destructor SE_SpriteLabel.Destroy;
 begin
   inherited;
 end;
-constructor SE_SubSprite.create (bmpFilename,Guid:string; x,y: integer; visible,Transparent: boolean; priority: integer);
+constructor SE_SubSprite.create (bmpFilename,Guid:string; x,y: integer; visible,Transparent: boolean; priority,alifespan: integer);
 begin
     lPriority := priority;
     lTransparent:= Transparent;
@@ -1087,9 +1085,9 @@ begin
     lBmp:= SE_Bitmap.Create ( bmpFilename );
     self.guid := Guid;
     stag:= Guid;
-    LifeSpan := 0;
+    LifeSpan := aLifespan;
 end;
-constructor SE_SubSprite.create (bmp:SE_Bitmap;Guid:string; x,y: integer; visible,transparent: boolean; priority: integer);
+constructor SE_SubSprite.create (bmp:SE_Bitmap;Guid:string; x,y: integer; visible,transparent: boolean; priority,alifespan: integer);
 begin
     lPriority := priority;
     lTransparent:= Transparent;
@@ -1100,7 +1098,7 @@ begin
     lBmp:= SE_Bitmap.Create ( bmp );
     self.guid := Guid;
     stag:= Guid;
-    LifeSpan := 0;
+    LifeSpan := aLifespan;
 end;
 destructor SE_SubSprite.Destroy;
 begin
@@ -1625,7 +1623,7 @@ begin
   aSprite.Priority := aPriority;
  // if (posX >= 0) and (posY >=0) then aSprite.Position :=  Point(posX,posY);
 
-  lstNewSprites.Add( ASprite );
+  lstSprites.Add( ASprite );
   aSprite.Visible := true;
   Result:= aSprite;
 end;
@@ -1646,7 +1644,7 @@ begin
 
 //  if (posX >= 0) and (posY >=0) then aSprite.Position :=  Point(posX,posY);
 
-  lstNewSprites.Add( ASprite );
+  lstSprites.Add( ASprite );
   aSprite.Visible := true;
   Result:= aSprite;
 end;
@@ -1668,7 +1666,7 @@ begin
   aSpriteProgressBar.pbVAlignment := DT_VCENTER;
 //  if (posX >= 0) and (posY >=0) then aSprite.Position :=  Point(posX,posY);
 
-  lstNewSprites.Add( aSpriteProgressBar );
+  lstSprites.Add( aSpriteProgressBar );
   aSpriteProgressBar.Visible := true;
   aSpriteProgressBar.Transparent := False;
   Result:= aSpriteProgressBar;
@@ -1685,7 +1683,7 @@ begin
   aSpritePoly.Guid := Guid;
   aSpritePoly.Priority := Priority;
 
-  lstNewSprites.Add( aSpritePoly );
+  lstSprites.Add( aSpritePoly );
   aSpritePoly.Visible := true;
   aSpritePoly.Transparent := true;
   Result:= aSpritePoly;
@@ -1694,7 +1692,7 @@ end;
 function SE_Engine.CreateLblTooltipSprite(const aText:string; const Guid: string; posX, posY: integer;
                              const FontName: string; const FontStyle :TFontStyles; const FontSize: Integer; const FontColor: TColor;
                              const BackColor: TColor; const Alignment: integer; BkMode: Integer; aTransColor: Integer; ForceTrans:boolean;
-                             const Transparent: boolean; const aPriority: integer; R:TRect  ): SE_Sprite;
+                             const Transparent: boolean; const aPriority: integer; var R:TRect  ): SE_Sprite;
 var
     bmp: SE_Bitmap;
     aSize: TSize;
@@ -1763,14 +1761,14 @@ begin
 
   Result := CreateSprite( SeBmp.Bitmap, Guid,1,1,1000, posX, posY, Transparent, aPriority);
   Result.TransparentColor := aTransColor;
-  Result.TransparentForced:= True;
+  Result.TransparentForced:= ForceTrans;
 end;
 
 procedure SE_Engine.AddSprite(aSprite: SE_Sprite) ;
 begin
   aSprite.Theater := FTheater;
   ASprite.FEngine := self;
-  lstNewSprites.Add( ASprite );
+  lstSprites.Add( ASprite );
   aSprite.Visible := true;
 end;
 
@@ -1962,7 +1960,6 @@ begin
   inherited Create( AOwner );
 
   lstSprites := TObjectList<SE_Sprite>.Create (true);
-  lstNewSprites := TObjectList<SE_Sprite>.Create (false);
 
   lstEngines := TObjectList<SE_Engine>.Create (false);   // link a quella del theater
   FClickSprites := true;
@@ -1974,7 +1971,6 @@ begin
   Clear;
  // if FTheater <> nil then
 //    FTheater.DetachSpriteEngine( self );
-  lstNewSprites.Free;
   lstSprites.free;
   lstEngines.Free;
   inherited Destroy;
@@ -1983,7 +1979,9 @@ end;
 
 procedure SE_Engine.RemoveSprite(ASprite: SE_Sprite);
 begin
-    ASprite.Dead := true;
+  ASprite.Dead := true;
+  ProcessSprites(0);
+
 end;
 
 
@@ -2040,13 +2038,6 @@ var
   i: integer;
 begin
   Result:=nil;
-  for i:= 0 to lstNewSprites.Count -1 do begin
-    if lstNewSprites [i].Guid  = Guid then
-      begin
-        result:=lstNewSprites [i];
-        exit;
-      end;
-  end;
   for i:= 0 to lstSprites.Count -1 do begin
     if lstSprites [i].Guid  = Guid then
       begin
@@ -2058,15 +2049,12 @@ begin
 end;
 function SE_Engine.GetSprite(n: integer): SE_Sprite;
 begin
-  if n >= lstSprites.Count then
-    Result := lstNewSprites[n - lstSprites.Count]
-  else
-    Result :=  lstSprites[n] ;
+  Result :=  lstSprites[n] ;
 end;
 
 function SE_Engine.GetSpriteCount: integer;
 begin
-  Result := lstSprites.Count + lstNewSprites.Count;
+  Result := lstSprites.Count;
 end;
 
 procedure SE_Engine.Notification(AComponent: TComponent;
@@ -2091,36 +2079,19 @@ begin
     end;
 
   end;
-  (* i nuovi sprite vanno nella lista principale *)
-  while lstNewSprites.Count > 0 do  begin
-    nIndex := -1;
-    for i := 0 to lstSprites.Count - 1 do
-      if  lstNewSprites[0].Priority >=  lstSprites[i].Priority then
-      begin
-        nIndex := i;
-        Break;
-      end;
-    if nIndex = -1 then
-      lstSprites.Add( lstNewSprites[0] )
-    else
 
-      lstSprites.Insert( nIndex, lstNewSprites[0] );
-    lstNewSprites.Delete( 0 ); // <-- non libera l'oggetto, ha passato il puntatore
-  end;
-
-  if FSortNeeded then begin
    lstSprites.sort(TComparer<SE_Sprite>.Construct(
    function (const L, R: SE_Sprite): integer
     begin
         result := R.Priority  - L.Priority  ;
      end
     ));
-    FSortNeeded := false;
-  end;
 
   // Movimento Sprites
-  for i := 0 to lstSprites.Count - 1 do  begin
-     lstSprites[i].Move(interval);
+  if interval > 0 then begin
+    for i := 0 to lstSprites.Count - 1 do  begin
+       lstSprites[i].Move(interval);
+    end;
   end;
   // Rimuovo fli sprite morti (dead=true) dalla lista degli sprites
 //  lstDeadSprites.Clear ;
@@ -2195,6 +2166,8 @@ begin
   for i := lstSprites.Count - 1 downto 0 do
      if ContainsText ( Sprites[i].Guid, Name ) then
       RemoveSprite( Sprites[i] );
+
+  ProcessSprites(0);
 end;
 
 procedure SE_Engine.RemoveAllSprites;
@@ -2203,6 +2176,7 @@ var
 begin
   for i := lstSprites.Count - 1 downto 0 do
     RemoveSprite( Sprites[i] );
+  ProcessSprites(0);
 end;
 procedure SE_Engine.HideAllSprites;
 var
@@ -2283,8 +2257,6 @@ end;
 
 procedure SE_Engine.Clear;
 begin
-
-  lstNewSprites.Clear;
   lstSprites.Clear ;
 end;
 
@@ -2861,12 +2833,13 @@ begin
       Exit;
     end;
   end;
+  Engine.ProcessSprites(0);
 end;
-procedure SE_Sprite.AddSubSprite ( const FileName, Guid: string; posX, posY: integer; const TransparentSprite: boolean; priority: integer);
+function SE_Sprite.AddSubSprite ( const FileName, Guid: string; posX, posY: integer; const TransparentSprite: boolean; priority,lifespan: integer):SE_SubSprite;
 var
   aSubSprite : SE_SubSprite;
 begin
-  aSubSprite := SE_SubSprite.create( FileName, Guid, PosX, PosY, True,TransparentSprite ,priority);
+  aSubSprite := SE_SubSprite.create( FileName, Guid, PosX, PosY, True,TransparentSprite ,priority,lifespan);
   lstSubSprites.Add( aSubSprite );
   lstSubSprites.sort(TComparer<SE_SubSprite>.Construct(
   function (const L, R: SE_SubSprite): integer
@@ -2874,13 +2847,17 @@ begin
     Result := L.lPriority - R.lPriority;
   end
  ));
+  Engine.ProcessSprites(0);
 end;
-
-procedure SE_Sprite.AddSubSprite ( const bmp: SE_Bitmap; Guid: string; posX, posY: integer; const TransparentSprite: boolean; priority: integer);
+function SE_Sprite.AddSubSpriteCentered ( const FileName, Guid: string; const TransparentSprite: boolean; priority,lifespan: integer):SE_SubSprite;
+begin
+  AddSubSprite( FileName, Guid, FrameWidth div 2 , FrameHeight div 2,  TransparentSprite, priority,lifespan  );
+end;
+function SE_Sprite.AddSubSprite ( const bmp: SE_Bitmap; Guid: string; posX, posY: integer; const TransparentSprite: boolean; priority,lifespan: integer):SE_SubSprite;
 var
   aSubSprite : SE_SubSprite;
 begin
-  aSubSprite := SE_SubSprite.create( bmp, Guid, PosX, PosY, True,TransparentSprite,priority );
+  aSubSprite := SE_SubSprite.create( bmp, Guid, PosX, PosY, True,TransparentSprite,priority,lifespan );
   lstSubSprites.Add( aSubSprite );
   lstSubSprites.sort(TComparer<SE_SubSprite>.Construct(
   function (const L, R: SE_SubSprite): integer
@@ -2888,6 +2865,11 @@ begin
     Result := L.lPriority - R.lPriority;
   end
  ));
+  Engine.ProcessSprites(0);
+end;
+function SE_Sprite.AddSubSpriteCentered ( const bmp: SE_Bitmap; Guid: string; const TransparentSprite: boolean; priority,lifespan: integer):SE_SubSprite;
+begin
+  AddSubSprite( Bmp, Guid, FrameWidth div 2 , FrameHeight div 2,  TransparentSprite, priority,lifespan  );
 end;
 
 procedure SE_Sprite.RemoveAllSubSprites ;
@@ -2898,6 +2880,7 @@ begin
     lstSubSprites[i].dead := true;
     lstSubSprites.Delete(i);
   end;
+  Engine.ProcessSprites(0);
 end;
 
 function SE_Sprite.CollisionDetect(aSprite: SE_sprite): Boolean;
@@ -3046,12 +3029,10 @@ end;
 procedure SE_Sprite.SetPriority(const Value: integer);
 begin
   FPriority := Value;
-  Engine.FSortNeeded := True;
 end;
 procedure SE_Sprite.SetModPriority(const Value: integer);
 begin
   FModPriority := Value;
-  Engine.FSortNeeded := True;
 end;
 
 procedure SE_Sprite.SetFrameXmin (const Value: Integer);
