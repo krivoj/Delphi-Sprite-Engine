@@ -2809,6 +2809,7 @@ begin
       fVisible := false;
     end;
   end;
+  Engine.ProcessSprites(0);
 end;
 function SE_Sprite.FindSubSprite ( Guid : string): SE_SubSprite;
 var
@@ -3216,7 +3217,6 @@ begin
    for I := 0 to lstSubSprites.Count -1 do begin
       if lstSubSprites.Items [i].LifeSpan > 0 then  begin
         lstSubSprites.Items [i].LifeSpan := lstSubSprites.Items [i].LifeSpan -  FTheater.thrdAnimate.Interval ;
-   //     lstSubSprites.Items[i].lBmp.Canvas.TextOut(0,0,IntToStr(lstSubSprites.Items [i].LifeSpan));
         if lstSubSprites.Items [i].LifeSpan <= 0 then begin
            lstSubSprites.Items [i].Dead := true;
         end;
@@ -3224,11 +3224,11 @@ begin
 
     if (lstSubSprites [i].lVisible) and not (lstSubSprites.Items [i].Dead) then begin
 
+     //   lstSubSprites.Items[i].lBmp.Canvas.TextOut(2,0,IntToStr(lstSubSprites.Items [i].LifeSpan));
       lstSubSprites [i].lBmp.CopyRectTo(fBMPCurrentFrame,0,0,
                               lstSubSprites [i].lx,lstSubSprites [i].ly,
                               lstSubSprites [i].lBmp.Width , lstSubSprites [i].lBmp.Height ,
                               lstSubSprites [i].ltransparent, lstSubSprites [i].lBmp.Bitmap.Canvas.Pixels [0,0]);
-      //  lstSubSprites.Items[i].lBmp.Canvas.TextOut(0,0,IntToStr(lstSubSprites.Items [i].LifeSpan));
     end;
    end;
   // fine gestione subsprites
@@ -3253,15 +3253,6 @@ begin
       fBMPCurrentFrame.Canvas.Font.Style := lstLabels.Items[i].lFontStyle;
       fBMPCurrentFrame.Canvas.Font.Quality := lstLabels.Items[i].lFontQuality;
 
-  //      fBMPCurrentFrame.Canvas.Brush.Style := lstLabels.Items[i].lBrushStyle;// bsClear;
-
-//      if lstLabels.Items[i].lTransparent <> 1 then begin
-//        fBMPCurrentFrame.Canvas.Brush.Color := lstLabels.Items[i].lBackColor;
-//        fBMPCurrentFrame.Bitmap.Canvas.FillRect(Rect(0,0,fBMPCurrentFrame.Width,fBMPCurrentFrame.Height));
-
-//      end;
-
-    // con questa versione non posos mettere la label a X,Y
       R.Left := lstLabels.Items[i].lX;
       R.Top := lstLabels.Items[i].lY;
       R.Right :=  fBMPCurrentFrame.Bitmap.Width;
@@ -3287,7 +3278,7 @@ begin
         DrawText(fBMPCurrentFrame.Canvas.handle, PChar(lstLabels.Items[i].lText), length(lstLabels.Items[i].lText), R, lstLabels.Items[i].lAlignment  )
       //  if Guid ='yes' then asm int 3; end;
       end;
-     end;
+    end;
 
   end;
 
@@ -3366,7 +3357,7 @@ begin
   if fGrayscaled then fBmpCurrentFrame.GrayScale ;
 
    fBmpCurrentFrame.fbitmapAlpha := FBMPCurrentFrameAlpha.Bitmap ;
-   //fBmpCurrentFrame.Canvas.TextOut(2,0,IntToStr(LifeSpan));
+  // fBmpCurrentFrame.Canvas.TextOut(2,0,IntToStr(LifeSpan));
    fBmpCurrentFrame.CopyRectTo( DestBitmap,0,0,X,Y,fBmpCurrentFrame.Width+1, fBmpCurrentFrame.height+1,Transparent,wtrans ) ;
 
 
