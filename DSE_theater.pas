@@ -3226,7 +3226,7 @@ begin
 
   for I := 0 to lstLabels.Count -1 do begin
 
-     if Guid='btnmenu_exit' then asm Int 3; end;
+//     if Guid='btnmenu_exit' then asm Int 3; end;
     if lstLabels.Items [i].LifeSpan > 0 then  begin
       lstLabels.Items [i].LifeSpan := lstLabels.Items [i].LifeSpan - FTheater.thrdAnimate.Interval ;
       if lstLabels.Items [i].LifeSpan = 0 then begin
