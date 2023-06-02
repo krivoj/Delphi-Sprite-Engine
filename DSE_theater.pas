@@ -5,9 +5,6 @@ uses
   Windows, Messages, vcl.Graphics, vcl.Controls, vcl.Forms, system.Classes, system.SysUtils, vcl.StdCtrls, vcl.ExtCtrls, strutils,DSE_list,
   DSE_Bitmap, DSE_ThreadTimer, DSE_Misc, DSE_defs,  Generics.Collections ,Generics.Defaults, dse_pathplanner;
 
-  const dt_XCenter = 120;
-  const dt_XRight = 121;
-
   Type TGridStyle = (gsNone,gsHex);
   Type TRenderBitmap = ( VirtualRender, VisibleRender );
   type TSpriteMoveMode = ( Normal, Path, Thrust);
@@ -1747,17 +1744,7 @@ begin
   R.Height := SeBmp.Height;
   R.Bottom := SeBmp.Height-1;
 
-  if Alignment = dt_XCenter then begin // 5 è il mio centro speciale
-    R.Left := aSize.Width - (aSize.Width div 2);
-    R.Width := aSize.Width;
-    DrawText(SeBmp.Bitmap.Canvas.handle, PChar(aText), length(aText), R, dt_wordbreak or dt_Center  );
-  end
-  else if Alignment = dt_XRight then begin // 7 a X a destra
-    DrawText(SeBmp.Bitmap.Canvas.handle, PChar(aText), length(aText), R, dt_wordbreak or DT_RIGHT  );
-  end
-  else begin
-    DrawText(SeBmp.Bitmap.Canvas.handle, PChar(aText), length(aText), R, Alignment  );
-  end;
+  DrawText(SeBmp.Bitmap.Canvas.handle, PChar(aText), length(aText), R, Alignment  );
 
   Result := CreateSprite( SeBmp.Bitmap, Guid,1,1,1000, posX, posY, Transparent, aPriority);
   Result.TransparentColor := aTransColor;
@@ -3239,7 +3226,7 @@ begin
 
   for I := 0 to lstLabels.Count -1 do begin
 
-    // if Guid='btnmenu_auto' then asm Int 3; end;
+     if Guid='btnmenu_exit' then asm Int 3; end;
     if lstLabels.Items [i].LifeSpan > 0 then  begin
       lstLabels.Items [i].LifeSpan := lstLabels.Items [i].LifeSpan - FTheater.thrdAnimate.Interval ;
       if lstLabels.Items [i].LifeSpan = 0 then begin
@@ -3264,23 +3251,7 @@ begin
       fBMPCurrentFrame.Canvas.Brush.Color := lstLabels.Items[i].lBackColor;
       SetBkMode(fBMPCurrentFrame.Canvas.Handle,lstLabels.Items[i].lTransparent ); // 1= transparent ,2= OPAQUE
 
-
-      if lstLabels.Items[i].lAlignment = dt_XCenter then begin //  è il mio centro speciale
-        textWidth := fBMPCurrentFrame.Canvas.TextWidth(lstLabels.Items[i].lText);
-        R.Left := R.Left - (textWidth div 2);
-        R.Width := textwidth;
-        DrawText(fBMPCurrentFrame.Canvas.handle, PChar(lstLabels.Items[i].lText), length(lstLabels.Items[i].lText), R, dt_wordbreak or dt_Center  );
-      end
-      else if lstLabels.Items[i].lAlignment = dt_XRight then begin // 7 a X a destra
-        textWidth := fBMPCurrentFrame.Canvas.TextWidth(lstLabels.Items[i].lText);
-        R.Left := R.Left - textWidth;
-        R.Width := textwidth;
-        DrawText(fBMPCurrentFrame.Canvas.handle, PChar(lstLabels.Items[i].lText), length(lstLabels.Items[i].lText), R, dt_wordbreak or DT_RIGHT  );
-      end
-      else begin
-        DrawText(fBMPCurrentFrame.Canvas.handle, PChar(lstLabels.Items[i].lText), length(lstLabels.Items[i].lText), R, lstLabels.Items[i].lAlignment  )
-      //  if Guid ='yes' then asm int 3; end;
-      end;
+      DrawText(fBMPCurrentFrame.Canvas.handle, PChar(lstLabels.Items[i].lText), length(lstLabels.Items[i].lText), R, lstLabels.Items[i].lAlignment  )
     end;
 
   end;
