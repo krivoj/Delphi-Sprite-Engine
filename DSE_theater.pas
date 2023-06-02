@@ -1065,7 +1065,7 @@ begin
   lFontColor := FontColor;
   lFontSize := FontSize;
   ltext:= atext;
-  lVisible:= visible;
+  lVisible:= true;
   lbackcolor := BackColor;
 //  lBrushStyle := bsclear; // default;
   lFontQuality := fqAntialiased; // default
@@ -2837,11 +2837,9 @@ begin
   Engine.ProcessSprites(0);
 end;
 function SE_Sprite.AddSubSprite ( const FileName, Guid: string; posX, posY: integer; const TransparentSprite: boolean; priority,lifespan: integer):SE_SubSprite;
-var
-  aSubSprite : SE_SubSprite;
 begin
-  aSubSprite := SE_SubSprite.create( FileName, Guid, PosX, PosY, True,TransparentSprite ,priority,lifespan);
-  lstSubSprites.Add( aSubSprite );
+  Result := SE_SubSprite.create( FileName, Guid, PosX, PosY, True,TransparentSprite ,priority,lifespan);
+  lstSubSprites.Add( Result );
   lstSubSprites.sort(TComparer<SE_SubSprite>.Construct(
   function (const L, R: SE_SubSprite): integer
   begin
@@ -2851,15 +2849,18 @@ begin
   Engine.ProcessSprites(0);
 end;
 function SE_Sprite.AddSubSpriteCentered ( const FileName, Guid: string; const TransparentSprite: boolean; priority,lifespan: integer):SE_SubSprite;
+var
+  posX,posY:Integer;
+  aSubSprite : SE_Subsprite;
 begin
-  AddSubSprite( FileName, Guid, FrameWidth div 2 - bmp.Width div 2 , FrameHeight div 2 -  bmp.Height div 2,  TransparentSprite, priority,lifespan  );
+  aSubSprite:= AddSubSprite( FileName, Guid, 0 , 0,  TransparentSprite, priority,lifespan  );
+  aSubSprite.lx :=  FrameWidth div 2 - aSubSprite.lbmp.Width div 2;
+  aSubSprite.ly  :=  FrameHeight div 2 - aSubSprite.lbmp.Height div 2;
 end;
 function SE_Sprite.AddSubSprite ( const bmp: SE_Bitmap; Guid: string; posX, posY: integer; const TransparentSprite: boolean; priority,lifespan: integer):SE_SubSprite;
-var
-  aSubSprite : SE_SubSprite;
 begin
-  aSubSprite := SE_SubSprite.create( bmp, Guid, PosX, PosY, True,TransparentSprite,priority,lifespan );
-  lstSubSprites.Add( aSubSprite );
+  Result := SE_SubSprite.create( bmp, Guid, PosX, PosY, True,TransparentSprite,priority,lifespan );
+  lstSubSprites.Add( Result );
   lstSubSprites.sort(TComparer<SE_SubSprite>.Construct(
   function (const L, R: SE_SubSprite): integer
   begin
@@ -3225,6 +3226,7 @@ begin
     if (lstSubSprites [i].lVisible) and not (lstSubSprites.Items [i].Dead) then begin
 
      //   lstSubSprites.Items[i].lBmp.Canvas.TextOut(2,0,IntToStr(lstSubSprites.Items [i].LifeSpan));
+    // if Guid='btnmenu_auto' then asm Int 3; end;
       lstSubSprites [i].lBmp.CopyRectTo(fBMPCurrentFrame,0,0,
                               lstSubSprites [i].lx,lstSubSprites [i].ly,
                               lstSubSprites [i].lBmp.Width , lstSubSprites [i].lBmp.Height ,
@@ -3237,6 +3239,7 @@ begin
 
   for I := 0 to lstLabels.Count -1 do begin
 
+    // if Guid='btnmenu_auto' then asm Int 3; end;
     if lstLabels.Items [i].LifeSpan > 0 then  begin
       lstLabels.Items [i].LifeSpan := lstLabels.Items [i].LifeSpan - FTheater.thrdAnimate.Interval ;
       if lstLabels.Items [i].LifeSpan = 0 then begin
@@ -3262,7 +3265,7 @@ begin
       SetBkMode(fBMPCurrentFrame.Canvas.Handle,lstLabels.Items[i].lTransparent ); // 1= transparent ,2= OPAQUE
 
 
-      if lstLabels.Items[i].lAlignment = dt_XCenter then begin // 5 è il mio centro speciale
+      if lstLabels.Items[i].lAlignment = dt_XCenter then begin //  è il mio centro speciale
         textWidth := fBMPCurrentFrame.Canvas.TextWidth(lstLabels.Items[i].lText);
         R.Left := R.Left - (textWidth div 2);
         R.Width := textwidth;
