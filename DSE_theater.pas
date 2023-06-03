@@ -19,6 +19,7 @@ type
   SE_TheaterEvent = procedure( Sender: TObject; VirtualBitmap, VisibleBitmap: SE_Bitmap ) of object;
   TCollisionEvent = procedure( Sender: TObject; Sprite1, Sprite2: SE_Sprite ) of object;
 
+  SE_EngineAfterRender = procedure ( Sender: TObject) of object;
   SE_EngineEvent = procedure(  ASprite: SE_Sprite ) of object;
   SE_EngineEventPartialMove = procedure(  ASprite: SE_Sprite; Partial: byte ) of object;
 
@@ -454,6 +455,7 @@ type
     FOnSpriteDestinationReached: SE_EngineEvent;
     FOnSpriteDestinationReachedPerc: SE_EngineEvent;
     FOnSpritePartialMove: SE_EngineEventPartialMove;
+    FOnAfterRender: SE_EngineAfterRender;
 
     FPixelClick: Boolean;
     FPixelCollision: Boolean;
@@ -538,6 +540,7 @@ type
     property OnSpriteDestinationReached: SE_EngineEvent read FOnSpriteDestinationReached write FOnSpriteDestinationReached;
     property OnSpriteDestinationReachedPerc: SE_EngineEvent read FOnSpriteDestinationReachedPerc write FOnSpriteDestinationReachedPerc;
     property OnSpritePartialMove : SE_EngineEventPartialMove read FOnSpritePartialMove write FOnSpritePartialMove;
+    property OnAfterRender : SE_EngineAfterRender read FOnAfterRender write FOnAfterRender;
 
     //    property OnSpriteMoving: SE_EngineEvent read FOnSpriteMoving write FOnSpriteMoving;
   end;
@@ -1301,7 +1304,6 @@ begin
 
     for i := lstEngines.Count - 1 downto 0 do  begin
       if lstEngines.items[i].RenderBitmap = VirtualRender then begin
-//        lstEngines.items[i].ProcessSprites(GetTickCount - SE_ThreadTimer(Sender).Interval  );
         lstEngines.items[i].ProcessSprites( SE_ThreadTimer(Sender).Interval  );
         lstEngines.items[i].RenderSprites (SE_ThreadTimer(Sender).Interval);
         iCollisionDelay := iCollisionDelay -  SE_ThreadTimer(Sender).Interval ;
@@ -1309,8 +1311,9 @@ begin
           iCollisionDelay := fCollisionDelay;
           lstEngines.items[i].CollisionDetection ;
         end;
-
       end;
+      if Assigned(lsTEngines[i].FOnAfterRender ) then lsTEngines[i].FOnAfterRender(lsTEngines[i]);
+
     end;
 
     if Assigned( FAfterSpriteRender ) then

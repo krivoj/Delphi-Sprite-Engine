@@ -845,7 +845,7 @@ begin
 end;
 procedure SE_Grid.MySpriteMouseUp(Sender: TObject; lstSprite: TObjectList<SE_Sprite>; Button: TMouseButton; Shift: TShiftState);
 var
-  CellX,CellY,i: integer;
+  CellX,CellY: integer;
 begin
 //    for I := 0 to lstSprite.Count -1 do begin
 //      if lstSprite[i].Engine = ScrollBarsEngine  then begin
@@ -881,7 +881,6 @@ begin
 end;
 procedure SE_grid.MouseMove(Shift: TShiftState; X, Y: Integer);
 var
-  aScrollBar: SE_Sprite;
   tmp: Integer;
 begin
     if DragScrollBar <> nil then begin
