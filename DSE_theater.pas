@@ -255,7 +255,7 @@ type
     procedure ResetState();
     // Display
 
-    procedure RefreshSurface(Sender: TObject);virtual;
+    procedure RefreshSurface(interval: integer);virtual;
     procedure CenterTheater;
     property ViewX: integer read fViewX write SetViewX;
     property ViewY: integer read fViewY write SetViewY;
@@ -1278,19 +1278,18 @@ function SE_Theater.GetEngineCount: integer;
 begin
   Result := lstEngines.Count;
 end;
-procedure SE_Theater.RefreshSurface(Sender: TObject);
+procedure SE_Theater.RefreshSurface(interval: integer);
 var
   i: integer;
 begin
-
+  if interval < 0  then
+    interval := 1;
   Inc( nFrames );
 
   fVirtualBitmap.Canvas.Brush.Color := fBackColor;
   fVirtualBitmap.Canvas.FillRect( Rect(0,0,fVirtualBitmap.Width,fVirtualBitmap.Height));
 
   if Assigned( FBeforeSpriteRender ) then  FBeforeSpriteRender( self,  fVirtualBitmap, fVisibleBitmap );
-
-
 
   if not fUpdating then begin
 //   SortEngines;
@@ -1304,9 +1303,9 @@ begin
 
     for i := lstEngines.Count - 1 downto 0 do  begin
       if lstEngines.items[i].RenderBitmap = VirtualRender then begin
-        lstEngines.items[i].ProcessSprites( SE_ThreadTimer(Sender).Interval  );
-        lstEngines.items[i].RenderSprites (SE_ThreadTimer(Sender).Interval);
-        iCollisionDelay := iCollisionDelay -  SE_ThreadTimer(Sender).Interval ;
+        lstEngines.items[i].ProcessSprites( interval  );
+        lstEngines.items[i].RenderSprites (interval);
+        iCollisionDelay := iCollisionDelay -  interval ;
         if iCollisionDelay <= 0 then begin
           iCollisionDelay := fCollisionDelay;
           lstEngines.items[i].CollisionDetection ;
@@ -1322,7 +1321,7 @@ begin
 
   DrawGrid;  // scrive su fVirtualBitmap, non sul canvas finale
 
-  PaintVisibleBitmap (SE_ThreadTimer(Sender).Interval);
+  PaintVisibleBitmap (Interval);
 
  end;
 
@@ -1332,7 +1331,7 @@ end;
 procedure SE_Theater.OnTimer(Sender: TObject);
 begin
   if FActive then
-    RefreshSurface(SE_ThreadTimer(Sender));
+    RefreshSurface(SE_ThreadTimer(Sender).Interval);
 end;
 
 procedure SE_Theater.SetActive(const Value: boolean);
