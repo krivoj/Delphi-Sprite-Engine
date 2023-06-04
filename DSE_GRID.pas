@@ -86,7 +86,7 @@ uses
     procedure MySpriteMouseDown(Sender: TObject; lstSprite: TObjectList<SE_Sprite>; Button: TMouseButton; Shift: TShiftState);
     procedure MySpriteMouseMove( Sender: TObject; lstSprite: TObjectList<SE_Sprite>; Shift: TShiftState; var Handled: boolean);
     procedure MySpriteMouseUp(Sender: TObject; lstSprite: TObjectList<SE_Sprite>; Button: TMouseButton; Shift: TShiftState);
-    procedure RefreshSurface(Sender: TObject); override;
+    procedure RefreshSurface(interval:integer); override;
 
     procedure MouseMove( Shift: TShiftState; X, Y: Integer); override;
 
@@ -250,7 +250,7 @@ begin
   end;
 end;
 
-procedure SE_grid.RefreshSurface(Sender: TObject);
+procedure SE_grid.RefreshSurface(interval:integer);
 begin
   ProcessAllCells;
   inherited;
