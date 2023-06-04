@@ -832,7 +832,7 @@ end;
 
 var
   i: integer;
-  MutexMove: cardinal;
+  MutexMove,MutexProcess: cardinal;
   arSin: array[0..360] of single;
   arCos: array[0..360] of single;
 
@@ -2027,15 +2027,17 @@ Function SE_Engine.FindSprite (Guid: string):SE_sprite;
 var
   i: integer;
 begin
+  WaitForSingleObject( MutexProcess, INFINITE );
   Result:=nil;
   for i:= 0 to lstSprites.Count -1 do begin
     if lstSprites [i].Guid  = Guid then
       begin
         result:=lstSprites [i];
+        ReleaseMutex(MutexProcess);
         exit;
       end;
   end;
-
+  ReleaseMutex(MutexProcess);
 end;
 function SE_Engine.GetSprite(n: integer): SE_Sprite;
 begin
@@ -2044,7 +2046,9 @@ end;
 
 function SE_Engine.GetSpriteCount: integer;
 begin
+  WaitForSingleObject( MutexProcess, INFINITE );
   Result := lstSprites.Count;
+  ReleaseMutex(MutexProcess);
 end;
 
 procedure SE_Engine.Notification(AComponent: TComponent;
@@ -2061,6 +2065,7 @@ var
 begin
 
 (* Ordinamento Sprites in base a priority *)
+  WaitForSingleObject( MutexProcess, INFINITE );
 
   if IsoPriority then begin
 
@@ -2077,18 +2082,6 @@ begin
      end
     ));
 
-  // Movimento Sprites
-  if interval > 0 then begin
-    for i := 0 to lstSprites.Count - 1 do  begin
-       lstSprites[i].Move(interval);
-    end;
-  end;
-  // Rimuovo fli sprite morti (dead=true) dalla lista degli sprites
-//  lstDeadSprites.Clear ;
-  for i := lstSprites.Count - 1 downTo 0 do begin
-    if lstSprites.Items [i].Dead then
-      lstSprites.Delete(i);
-  end;
 
   for i := lstSprites.Count - 1 downTo 0 do begin
     for L := lstSprites[i].Labels.Count - 1 downTo 0 do begin
@@ -2101,28 +2094,19 @@ begin
     end;
   end;
 
-  {  while lstDeadSprites.Count > 0 do
-  begin
-    nIndex := lstSprites.IndexOf( lstDeadSprites[0] );
-    if nIndex >= 0 then
-    begin
-      if Assigned( FOnRemoveSprite ) then  FOnRemoveSprite( self,  lstSprites[nIndex]  );
-      lstSprites.Delete( nIndex );     // lo rimuove realmente
+  for i := lstSprites.Count - 1 downTo 0 do begin
+    if lstSprites.Items [i].Dead then
+      lstSprites.Delete(i);
+  end;
 
-    end
-    else
-    begin
-      nIndex := lstNewSprites.IndexOf( lstDeadSprites[0] );
-      if nIndex >= 0 then
-      begin
-        //lstNewSprites[nIndex].Free;
-        lstNewSprites.Delete( nIndex ); // non lo rimuove realmente
-      end;
+  // Movimento Sprites
+  if interval > 0 then begin
+    for i := 0 to lstSprites.Count - 1 do  begin
+       lstSprites[i].Move(interval);
     end;
+  end;
 
-    lstDeadSprites.Delete( 0 );
-  end;   }
-
+  ReleaseMutex(  MutexProcess );
 
 end;
 procedure SE_Engine.SetSpriteAlpha ( Name: string; Alpha: double );
@@ -2799,7 +2783,7 @@ begin
       fVisible := false;
     end;
   end;
-  Engine.ProcessSprites(0);
+
 end;
 function SE_Sprite.FindSubSprite ( Guid : string): SE_SubSprite;
 var
@@ -2824,7 +2808,7 @@ begin
       Exit;
     end;
   end;
-  Engine.ProcessSprites(0);
+
 end;
 function SE_Sprite.AddSubSprite ( const FileName, Guid: string; posX, posY: integer; const TransparentSprite: boolean; priority,lifespan: integer):SE_SubSprite;
 begin
@@ -2836,7 +2820,7 @@ begin
     Result := L.lPriority - R.lPriority;
   end
  ));
-  Engine.ProcessSprites(0);
+
 end;
 function SE_Sprite.AddSubSpriteCentered ( const FileName, Guid: string; const TransparentSprite: boolean; priority,lifespan: integer):SE_SubSprite;
 var
@@ -2857,7 +2841,7 @@ begin
     Result := L.lPriority - R.lPriority;
   end
  ));
-  Engine.ProcessSprites(0);
+
 end;
 function SE_Sprite.AddSubSpriteCentered ( const bmp: SE_Bitmap; Guid: string; const TransparentSprite: boolean; priority,lifespan: integer):SE_SubSprite;
 begin
@@ -2872,7 +2856,6 @@ begin
     lstSubSprites[i].dead := true;
     lstSubSprites.Delete(i);
   end;
-  Engine.ProcessSprites(0);
 end;
 
 function SE_Sprite.CollisionDetect(aSprite: SE_sprite): Boolean;
@@ -3197,6 +3180,7 @@ var
   R :Trect;
 begin
 
+  WaitForSingleObject(  MutexProcess, INFINITE);
   if RenderTo = VisibleRender then
     DestBitmap:= Theater.VisibleBitmap else
       DestBitmap := Theater.fvirtualBitmap;
@@ -3337,6 +3321,7 @@ begin
   // fBmpCurrentFrame.Canvas.TextOut(2,0,IntToStr(LifeSpan));
    fBmpCurrentFrame.CopyRectTo( DestBitmap,0,0,X,Y,fBmpCurrentFrame.Width+1, fBmpCurrentFrame.height+1,Transparent,wtrans ) ;
 
+  ReleaseMutex(MutexProcess);
 
 end;
 procedure SE_Theater.Loaded;
@@ -4520,12 +4505,14 @@ end;
 
 initialization
   MutexMove:=CreateMutex(nil,false,'move');
+  MutexProcess:=CreateMutex(nil,false,'process');
   for i := 0 to 360 do begin
     arSin[i] := Sin( DegToRad( i ) );
     arCos[i] := Cos( DegToRad( i ) );
   end;
 finalization
-  CloseHandle(MutexMove)
+  CloseHandle(MutexMove);
+  CloseHandle(MutexProcess);
 
 
 end.
