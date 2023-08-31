@@ -652,8 +652,9 @@ type
     DestinationReached : boolean;
     DestinationReachedPerc : boolean;
 
-    iTag,iTag2,iTag3 : integer;
-    sTag : string;
+    iTag,iTag2,iTag3,P,active,T : integer;
+    sTag,G : string;
+
     CollisionIgnore: Boolean;
     MouseX, MouseY : integer; // coordinate del mouse attuali su questo SE_Sprite
     constructor Create();overload ; virtual;
@@ -2490,7 +2491,7 @@ begin
   FBMPalpha.free;
   FBMPCurrentFrameAlpha.Free;
   FMoverData.free;
-
+  lstSubSprites.free;
   lstLabels.Free;
 //  RemoveAllSubSprites;
  // lstSubSprites.Free;
